@@ -95,8 +95,11 @@ The first change was mainly an **affordance problem** because users were not giv
 ## Before / After
 
 **Before:** Vendors outside the budget were faded using opacity and were mixed into the same list as vendors that fit the budget.
-./before.png
+
+![Before: out-of-budget vendors faded but mixed into one list](./before.png)
 
 **After:** Vendors outside the budget are separated into their own labeled section, making it much easier to see which vendors fit the budget.
-./after.png
+
+![After: out-of-budget vendors grouped into a separate labeled section](./after.png)
+
 The main problem was not that the original design looked generic. The bigger issue was that the original list relied on a subtle opacity difference to show which vendors fit the budget. That could easily be missed, especially when quickly looking through the page. Separating the vendors into two groups and showing the number of vendors outside the budget makes the difference much clearer.
