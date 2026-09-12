@@ -1,61 +1,102 @@
 # VowFare
 
-A three-screen interactive mock-up for VowFare — a platform where couples set a budget for each wedding vendor category, see who fits it, and book direct.
+A three-screen interactive mockup for VowFare, a platform where couples can set a budget for each wedding vendor category, see which vendors fit their budget, and book directly.
 
 **Live prototype:** https://kenziemw.github.io/Vow-Fare-Makenzie-Whitman/
 
----
+## 1. Need, Persona, Capability, and Value
 
-## 1. Need, persona, capability, value
+**Need:** Couples often do not know how much wedding vendors actually cost. They usually have to reach out to multiple vendors and wait for responses before they know if something is even within their budget.
 
-**Need:** Couples don't know what wedding vendors actually cost until they've emailed several and waited days for replies, making it hard to know what's affordable before they get attached to an option.
+**Persona:** A newly engaged couple who is 4 to 8 months away from their wedding, has full-time jobs, and is planning mostly during evenings and weekends. They also have not chosen a venue yet.
 
-**Persona:** A newly engaged couple, 4–8 months from their wedding date, planning in evenings and weekends around full-time jobs, who hasn't locked in a venue yet.
+**Capability:** See and compare vendors in a specific category that fit within a budget you set.
 
-**Capability:** See and compare vendors in a specific category that fit a budget you set.
+**Value:** Certainty. Couples can know what they can actually afford before spending time contacting vendors or getting attached to an option.
 
-**Fundamental value:** Certainty — knowing what you can actually afford before you spend time or get emotionally attached to an option.
+## 2. The Three Screens
 
-## 2. The three screens
+### 1. Landing Page
 
-| Screen | Job | Why it earned a slot | Design question it answers |
-|---|---|---|---|
-| **1. Landing** | Signal the core value and primary capability in five seconds | It's the first-read test — if the value isn't clear before reading body copy, nothing else on the site matters | Does the page communicate "set a budget, see vendors that fit it, book direct" before the visitor reads anything? |
-| **2. Budget → Matches** | Show the couple setting a budget (and guest count, where relevant) for one category and seeing real vendors filtered against it | This is the mechanism behind the promise — without seeing it work, "certainty" is just a headline | Do the vendor cards read as "matches for my number" through grouping, or as a generic directory? |
-| **3. Vendor profile** | Show the payoff: a transparent price breakdown and a direct "request to book" action | Demonstrates "book direct" — the moment the multi-platform, back-and-forth pain actually goes away | Does the pricing information read as settled and clear, or does it look like more negotiation is still needed? |
+The landing page is meant to quickly explain what VowFare does. The main question it answers is: **Does the page clearly communicate that you can set a budget, see vendors that fit it, and book directly?**
 
-## 3. Design question plan
+### 2. Budget → Matches
 
-At least one question per group, worded as I'd actually say it to my persona, with a prediction tied to a specific part of the prototype.
+This screen shows the main feature of the website. Couples can set a budget and guest count and then see vendors that fit their budget. The main question is whether the vendors feel like actual matches for the user's budget instead of just looking like another vendor directory.
 
-| Group | Question (as I'd say it) | Prediction | What it rests on |
-|---|---|---|---|
-| **Need** | "Tell me about the last time you looked into vendors for something like this — what did you end up doing?" | Most will describe emailing several vendors and waiting on quotes, or relying on Instagram/word-of-mouth recommendations. | Whether Screen 2's instant, upfront pricing reads as solving that exact wait, or just as another list to browse. |
-| **Value** | "If you could know upfront exactly what you could afford before reaching out to anyone, what would that be worth to you — in a word or two?" | "Peace of mind" or "confidence" — validating certainty as the value, not "convenience" or "speed." | Whether the budget slider on Screen 2 makes that upfront knowledge feel real and immediate, rather than gimmicky. |
-| **Persona** | "How far out are you from your wedding, and how are you splitting up the planning right now?" | Most will be 4–9 months out, doing this in scattered evenings between other commitments. | Whether the "no back-and-forth" framing on the landing screen resonates with someone short on time, versus someone with time to spare. |
-| **Capability** | "I'm going to show you this screen for five seconds." (Hide Screen 2.) "What does this let you do?" | People will say "see vendors in my price range" without mentioning booking — meaning the "request to book" action may need more visual weight on Screen 3, since it wasn't visible in a five-second glance. | Whether the primary capability (comparing by budget) reads faster than the secondary payoff (booking), which is the intended hierarchy — but worth confirming it doesn't undersell booking entirely. |
+### 3. Vendor Profile
 
-## 4. Design justification and first read
+This screen shows the payoff of the platform. It gives the user a clear price breakdown and an option to request to book. The main question is whether the pricing feels clear and final, instead of making the user feel like they still need to negotiate with the vendor.
 
-Opening the live URL fresh:
+## 3. Design Questions and Predictions
 
-- **Does the landing screen signal the capability and value before reading?** Mostly yes — one headline, one subhead, one primary button ("Set your budget"). The category grid below it is a secondary entry point into the *same* capability, not a competing one, so it supports rather than dilutes the primary job.
-- **Does everything on the landing screen earn its place?** Yes, with one caveat: the category grid is the only thing that could arguably compete for attention with the primary CTA, since it's a full second section. It still points at the same action, so I judged it a support element rather than a distraction — but it's the first thing I'd re-test with users.
-- **Grouping and Gestalt principles:** On Screen 2, the guest-count and budget sliders sit inside one bordered panel — **common region** signals "these are the filters, used together." Vendor cards share one visual treatment — **similarity** — so they read as one comparable set. On Screen 3, the price breakdown sits in its own bordered panel, separating "the numbers" from the descriptive text above it, again via common region.
-- **Do screens 2 and 3 stay on mission, with a way back everywhere?** Yes. Screen 2 has three paths home: the clickable logo, the breadcrumb, and an explicit "← Back to home" link. Screen 3 has the same logo/breadcrumb plus a "← Back to matches" link.
-- **What did the AI get wrong or oversimplify, and what changed?**
-  1. Vendor cards were clickable but gave no visual signal that they led anywhere — an interactive card looked identical to a static price line. **Fix:** added a hint line above the list ("Click a vendor to see full pricing and request to book") and a chevron icon on every card, so the affordance is visible instead of assumed.
-  2. Out-of-budget vendors were only differentiated by 40% opacity, mixed into the same list as vendors that fit. Opacity alone is a weak, easy-to-miss signal — it's a **similarity/contrast** cue, not a grouping one, and on a quick glance it could just look broken. **Fix:** vendors are now split into two labeled, spatially separate sections — "Fits your budget" and "Outside this budget (n)" — using **common region and proximity** instead of relying on a subtle opacity difference.
-- **Which decision motivated each change?** #1 was a signaling/affordance problem — nothing indicated interactivity. #2 was a grouping problem — the "in budget vs. out of budget" distinction needed a stronger Gestalt signal than opacity alone provides.
+### Need
 
-### Before / after
+**Question:** "Tell me about the last time you started looking for a wedding vendor, like a photographer or caterer. What happened, and what did you end up doing?"
 
-**Before** — out-of-budget vendors are only faded via opacity, mixed into one continuous list with no separation:
+**Prediction:** I think they will talk about contacting several vendors through Instagram or a wedding website, waiting for responses, and not getting actual pricing right away. Some might even say they chose a vendor because they responded the fastest instead of because they were the best fit for their budget.
 
-![Before: opacity-only signal](./before.png)
+**What this tests:** Whether the instant pricing on Screen 2 actually solves the problem of not knowing prices upfront.
 
-**After** — out-of-budget vendors are grouped into their own labeled section, separated from the vendors that fit:
+### Value
 
-![After: grouped by common region](./after.png)
+**Question:** "If you could see the pricing upfront and know what you can afford before contacting anyone, what would that be worth to you in a word or two?"
 
-The specific problem here was that the original list signaled fit only through a low-contrast opacity difference on individual cards, which is easy to miss at a glance and doesn't tell you *how many* vendors are outside your range. Grouping by common region and labeling the count fixes both.
+**Prediction:** I expect answers like "peace of mind," "confidence," or "control." If people mostly say "convenience" or "easier," then we may actually be solving a different problem than we thought.
+
+**What this tests:** Whether the budget slider and filtered vendors on Screen 2 actually make the idea of certainty feel useful.
+
+### Persona
+
+**Question:** "How often does wedding planning come up for you right now? Are you usually sitting down specifically to plan, or are you doing it in between other things?"
+
+**Prediction:** I think most people will say they plan a few times a week in small chunks of time, like late at night or during work breaks, instead of having a dedicated planning session.
+
+**What this tests:** Whether the "no back-and-forth" message on the landing page is actually valuable for someone who has limited time to plan.
+
+### Capability
+
+**Question:** "I'm going to show you this for five seconds and then hide it. What do you think this lets you do?"
+
+**Prediction:** I think people will say something like "see vendors that fit my budget" but may not mention booking. If that happens, the booking option on Screen 3 may need to stand out more.
+
+**What this tests:** Whether the main feature is clear enough when someone only sees the screen for a few seconds.
+
+## 4. Design Justification and First Read
+
+When I opened the live prototype, I think the landing page mostly communicates the main idea right away. There is one main headline, a short subheading, and a primary "Set your budget" button. The category grid below it supports the same main action, so I do not think it takes away too much from the main purpose of the page.
+
+The main thing I would want to test again is the category grid because it is the only part of the landing page that could compete with the main button for attention.
+
+On Screen 2, the guest count and budget sliders are grouped together in one bordered section. This uses **common region** to show that they are connected and work together as filters. The vendor cards also have the same design, which uses **similarity** to make them feel like one group of options.
+
+On Screen 3, the price breakdown is separated into its own bordered section. This helps the pricing stand out from the other information on the page and uses **common region** to group the numbers together.
+
+I also made sure that Screens 2 and 3 have clear ways to go back. Screen 2 has the logo, breadcrumb, and a "← Back to home" link. Screen 3 has the logo, breadcrumb, and a "← Back to matches" link.
+
+### Changes I Made
+
+There were two main things the AI got wrong or oversimplified.
+
+**1. The vendor cards did not look clickable.**
+
+The cards were technically clickable, but there was nothing that really showed the user they could click them. They looked more like static pricing information.
+
+**Fix:** I added a short message above the list saying, "Click a vendor to see full pricing and request to book." I also added a chevron to each vendor card so it is more obvious that the cards are interactive.
+
+**2. Vendors outside the budget were not separated clearly enough.**
+
+Originally, vendors that were outside the budget were just shown with lower opacity in the same list. This was easy to miss and could make the cards look like they were broken rather than intentionally outside the budget.
+
+**Fix:** I separated the vendors into two sections: "Fits your budget" and "Outside this budget (n)." This makes the difference much easier to understand because the groups are physically separated and clearly labeled.
+
+The first change was mainly an **affordance problem** because users were not given a clear signal that the cards were clickable. The second was a **grouping problem** because the difference between vendors within and outside the budget needed to be more obvious.
+
+## Before / After
+
+**Before:** Vendors outside the budget were faded using opacity and were mixed into the same list as vendors that fit the budget.
+/before.png
+
+**After:** Vendors outside the budget are separated into their own labeled section, making it much easier to see which vendors fit the budget.
+/after.png
+The main problem was not that the original design looked generic. The bigger issue was that the original list relied on a subtle opacity difference to show which vendors fit the budget. That could easily be missed, especially when quickly looking through the page. Separating the vendors into two groups and showing the number of vendors outside the budget makes the difference much clearer.
