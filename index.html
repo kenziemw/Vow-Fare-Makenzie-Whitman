@@ -112,7 +112,13 @@
     opacity:1; transition:opacity 0.15s ease;
   }
   .vendor-card:hover{background:var(--sage-pale);}
-  .vendor-card.out-of-budget{opacity:0.4;}
+  .vendor-card.out-of-budget{opacity:0.75;}
+  .vendor-list.out{margin-top:0;}
+  .out-of-budget-section{margin-top:36px;}
+  .out-heading{
+    font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;
+    color:var(--ink-soft); margin-bottom:10px; padding-top:4px;
+  }
   .vendor-card .vname{font-weight:600; font-size:15px; margin-bottom:3px;}
   .vendor-card .vblurb{font-size:13px; color:var(--ink-soft); max-width:44ch;}
   .vendor-card .vprice-col{display:flex; align-items:center; gap:10px; margin-left:16px; flex-shrink:0;}
@@ -236,6 +242,10 @@
         Click a vendor to see full pricing and request to book
       </p>
       <div class="vendor-list" id="vendor-list"></div>
+      <div class="out-of-budget-section" id="out-section">
+        <p class="out-heading" id="out-heading"></p>
+        <div class="vendor-list out" id="vendor-list-out"></div>
+      </div>
     </div>
   </section>
 </main>
@@ -454,8 +464,12 @@
     document.getElementById("budget-amount").textContent = "$" + Number(state.budget).toLocaleString();
     document.getElementById("guest-amount").textContent = state.guestCount + " guests";
 
-    const list = document.getElementById("vendor-list");
-    list.innerHTML = "";
+    const fitList = document.getElementById("vendor-list");
+    const outList = document.getElementById("vendor-list-out");
+    const outSection = document.getElementById("out-section");
+    fitList.innerHTML = "";
+    outList.innerHTML = "";
+
     const sorted = [...cat.vendors].sort((a,b) => a.price - b.price);
     let fitCount = 0;
 
@@ -471,6 +485,8 @@
       } else if(fitsBudget && !fitsGuests){
         tag = '<span class="fits-tag out">Too small for your guest count</span>';
       } else if(!fitsBudget && fitsGuests && usesGuestFilter){
+        tag = '<span class="fits-tag out">Over budget</span>';
+      } else if(!fitsBudget){
         tag = '<span class="fits-tag out">Over budget</span>';
       }
 
@@ -489,8 +505,17 @@
           <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
         </div>
       `;
-      list.appendChild(card);
+
+      if(fits){
+        fitList.appendChild(card);
+      } else {
+        outList.appendChild(card);
+      }
     });
+
+    const outCount = sorted.length - fitCount;
+    outSection.style.display = outCount > 0 ? "" : "none";
+    document.getElementById("out-heading").textContent = `Outside this budget (${outCount})`;
 
     const guestNote = usesGuestFilter ? ` for ${state.guestCount} guests` : "";
     document.getElementById("match-count").innerHTML = `<strong>${fitCount} of ${sorted.length}</strong> ${cat.label.toLowerCase()} vendors fit this budget${guestNote}.`;
