@@ -52,10 +52,10 @@ Opening the live URL fresh:
 
 **Before** — out-of-budget vendors are only faded via opacity, mixed into one continuous list with no separation:
 
-![Before: opacity-only signal](./docs/before.png)
+![Before: opacity-only signal](./before.png)
 
 **After** — out-of-budget vendors are grouped into their own labeled section, separated from the vendors that fit:
 
-![After: grouped by common region](./docs/after.png)
+![After: grouped by common region](./after.png)
 
 "It looks generic" isn't the issue here — the specific problem was that the original list signaled fit only through a low-contrast opacity difference on individual cards, which is easy to miss at a glance and doesn't tell you *how many* vendors are outside your range. Grouping by common region and labeling the count fixes both.
