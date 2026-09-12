@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VowFare — No connections. Just "I do."</title>
+<meta name="description" content="Set a budget for each wedding vendor category, see who fits it, and book direct.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#26292c;
+    --ink-soft:#63676b;
+    --paper:#F7F7F4;
+    --stock:#FFFFFF;
+    --sage:#5C7A5F;
+    --sage-dark:#456048;
+    --sage-pale:#E7EFE6;
+    --line: rgba(38,41,44,0.12);
+    --max: 920px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{
+    font-family:'Newsreader', serif;
+    font-weight:500;
+    margin:0;
+    line-height:1.15;
+    letter-spacing:-0.01em;
+  }
+  p{margin:0;}
+  a{color:inherit; cursor:pointer;}
+  button{font-family:inherit; cursor:pointer;}
+  ::selection{background:var(--sage); color:var(--stock);}
+  :focus-visible{outline:2px solid var(--sage); outline-offset:3px;}
+
+  .wrap{max-width:var(--max); margin:0 auto; padding:0 24px;}
+
+  /* ---- header, shared on all screens ---- */
+  header{padding:22px 0; background:var(--sage-dark);}
+  .header-row{display:flex; align-items:center; justify-content:space-between; gap:16px;}
+  .logo{font-family:'Newsreader', serif; font-size:19px; font-weight:500; display:flex; align-items:center; gap:9px; color:var(--stock); text-decoration:none; background:none; border:none; padding:0;}
+  .logo .accent{color:#C9DCC6;}
+  .logo-mark{flex-shrink:0; display:block;}
+  .crumbs{font-size:13px; color:#DCE8DA;}
+  .crumbs button{background:none; border:none; color:#DCE8DA; font-size:13px; padding:0; text-decoration:underline;}
+  .crumbs button:hover{color:var(--stock);}
+  .crumbs span.sep{margin:0 6px; opacity:0.6;}
+  @media (max-width:640px){ .crumbs{display:none;} }
+
+  main{display:none;}
+  main.active{display:block;}
+
+  /* ---- Screen 1: Landing ---- */
+  .hero{padding:96px 0 80px; text-align:center;}
+  .hero .kicker{font-size:13px; color:var(--sage-dark); font-weight:500; letter-spacing:0.02em; margin-bottom:20px;}
+  .hero h1{font-size:clamp(2.3rem, 5.5vw, 3.4rem); max-width:14ch; margin:0 auto;}
+  .hero .sub{margin:22px auto 0; max-width:42ch; color:var(--ink-soft); font-size:16.5px;}
+  .hero .cta-primary{
+    display:inline-block; margin-top:34px;
+    background:var(--sage-dark); color:var(--stock);
+    border:none; border-radius:3px;
+    padding:15px 32px; font-size:15px; font-weight:500;
+  }
+  .hero .cta-primary:hover{background:var(--ink);}
+
+  .cat-picker{padding:52px 0 80px;}
+  .cat-picker .section-head{max-width:480px; margin:0 auto 32px; text-align:center;}
+  .cat-picker .section-head .kicker{font-size:13px; color:var(--sage-dark); font-weight:500; margin-bottom:10px;}
+  .cat-picker .section-head h2{font-size:clamp(1.4rem, 3vw, 1.8rem);}
+  .chip-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line);}
+  @media (max-width:700px){ .chip-grid{grid-template-columns:repeat(2,1fr);} }
+  .chip{
+    background:var(--stock); border:none; text-align:left;
+    padding:20px 18px; font-family:'Inter', sans-serif;
+  }
+  .chip:hover{background:var(--sage-pale);}
+  .chip .name{font-weight:600; font-size:14.5px; margin-bottom:4px; display:block;}
+  .chip .range{font-size:12.5px; color:var(--ink-soft);}
+
+  /* ---- Screen 2: Budget -> Matches ---- */
+  section{padding:52px 0;}
+  .matches-head{max-width:640px; margin:0 auto 8px;}
+  .matches-head .kicker{font-size:13px; color:var(--sage-dark); font-weight:500; margin-bottom:10px;}
+  .matches-head h2{font-size:clamp(1.5rem, 3vw, 2rem);}
+
+  .budget-panel{
+    background:var(--stock); border:1px solid var(--line);
+    padding:26px 24px; margin-top:28px;
+  }
+  .budget-row{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;}
+  .field-group.divided{margin-top:22px; padding-top:20px; border-top:1px solid var(--line);}
+  .budget-row .label{font-size:13px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.05em;}
+  .budget-row .amount{font-family:'Newsreader', serif; font-size:26px;}
+  input[type="range"]{width:100%; accent-color:var(--sage-dark);}
+  .match-count{margin-top:14px; font-size:13.5px; color:var(--ink-soft);}
+  .match-count strong{color:var(--sage-dark);}
+
+  .vendor-list{margin-top:24px; display:flex; flex-direction:column; gap:1px; background:var(--line); border:1px solid var(--line);}
+  .vendor-card{
+    background:var(--stock); border:none; text-align:left;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:18px 20px; width:100%; font-family:'Inter', sans-serif;
+    opacity:1; transition:opacity 0.15s ease;
+  }
+  .vendor-card:hover{background:var(--sage-pale);}
+  .vendor-card.out-of-budget{opacity:0.4;}
+  .vendor-card .vname{font-weight:600; font-size:15px; margin-bottom:3px;}
+  .vendor-card .vblurb{font-size:13px; color:var(--ink-soft); max-width:44ch;}
+  .vendor-card .vprice-col{display:flex; align-items:center; gap:10px; margin-left:16px; flex-shrink:0;}
+  .vendor-card .vprice{font-family:'Newsreader', serif; font-size:19px; white-space:nowrap;}
+  .vendor-card .chevron{width:16px; height:16px; color:var(--ink-soft); flex-shrink:0;}
+  .list-hint{margin-top:18px; margin-bottom:10px; font-size:13px; color:var(--ink-soft); display:flex; align-items:center; gap:6px;}
+  .list-hint svg{width:14px; height:14px; color:var(--sage-dark);}
+  .vendor-card .fits-tag{
+    display:inline-block; margin-top:6px;
+    font-size:11px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase;
+    color:var(--sage-dark); background:var(--sage-pale);
+    padding:2px 8px; border-radius:2px;
+  }
+  .vendor-card .fits-tag.out{
+    color:#8a6a2f; background:#F3E9D2;
+  }
+  .vendor-card .vcap{font-size:12px; color:var(--ink-soft); margin-top:2px; display:block;}
+
+  /* ---- Screen 3: Vendor profile ---- */
+  .profile-head{display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap;}
+  .profile-photo{
+    width:120px; height:120px; border-radius:6px; flex-shrink:0;
+    background:var(--sage-pale); display:flex; align-items:center; justify-content:center;
+    color:var(--sage-dark);
+  }
+  .profile-photo svg{width:44px; height:44px;}
+  .profile-title h2{font-size:clamp(1.5rem,3vw,2rem);}
+  .profile-title .cat-label{font-size:13px; color:var(--sage-dark); font-weight:500; margin-bottom:8px; display:block;}
+  .profile-title .blurb{margin-top:10px; color:var(--ink-soft); font-size:15px; max-width:50ch;}
+
+  .price-panel{
+    margin-top:36px; background:var(--stock); border:1px solid var(--line); padding:26px 24px;
+  }
+  .price-panel h3{font-size:16px; font-weight:600; margin-bottom:16px;}
+  .price-line{display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--line); font-size:14.5px;}
+  .price-line:last-of-type{border-bottom:none;}
+  .price-line.total{font-weight:600; padding-top:14px; border-top:1px solid var(--ink); margin-top:6px; font-size:16px;}
+  .price-line .item{color:var(--ink-soft);}
+  .price-line.total .item{color:var(--ink);}
+
+  .book-row{margin-top:26px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
+  .cta-primary.book{
+    background:var(--sage-dark); color:var(--stock); border:none; border-radius:3px;
+    padding:14px 30px; font-size:14.5px; font-weight:500;
+  }
+  .cta-primary.book:hover{background:var(--ink);}
+  .book-note{font-size:13px; color:var(--ink-soft);}
+  .back-link{margin-top:36px; font-size:14px; color:var(--sage-dark); background:none; border:none; text-decoration:underline; padding:0;}
+  .back-link.top{margin-top:0; margin-bottom:24px; display:inline-block;}
+
+  footer{padding:26px 0; border-top:1px solid var(--line); text-align:center; font-size:13px; color:var(--ink-soft);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap header-row">
+    <button class="logo" onclick="goHome()">
+      <svg class="logo-mark" width="26" height="20" viewBox="0 0 34 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="11" cy="12" r="8" stroke="#FFFFFF" stroke-width="1.6"/>
+        <circle cx="21" cy="12" r="8" stroke="#FFFFFF" stroke-width="1.6"/>
+        <path d="M22 3.5 L27.5 5.3 L22.5 6.8 L23.7 5 Z" fill="#FFFFFF"/>
+      </svg>
+      <span>Vow<span class="accent">Fare</span></span>
+    </button>
+    <div class="crumbs" id="crumbs"></div>
+  </div>
+</header>
+
+<!-- SCREEN 1: LANDING -->
+<main id="screen-home" class="active">
+  <section class="hero">
+    <div class="wrap">
+      <p class="kicker">Wedding vendor booking, priced upfront</p>
+      <h1>No connections. Just "I do."</h1>
+      <p class="sub">Set a budget for every vendor, compare real pricing, and book direct — no layovers, no back-and-forth.</p>
+      <button class="cta-primary" onclick="openMatches('photography')">Set your budget</button>
+    </div>
+  </section>
+  <section class="cat-picker">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">Every category, one place</p>
+        <h2>Or start with a category.</h2>
+      </div>
+      <div class="chip-grid" id="chip-grid"></div>
+    </div>
+  </section>
+</main>
+
+<!-- SCREEN 2: BUDGET -> MATCHES -->
+<main id="screen-matches">
+  <section>
+    <div class="wrap">
+      <button class="back-link top" onclick="goHome()">← Back to home</button>
+      <div class="matches-head">
+        <p class="kicker" id="matches-kicker">Photography</p>
+        <h2 id="matches-title">Set a budget, see who fits it.</h2>
+      </div>
+
+      <div class="budget-panel">
+        <div class="field-group" id="guest-field">
+          <div class="budget-row">
+            <span class="label">Guest count</span>
+            <span class="amount" id="guest-amount">100 guests</span>
+          </div>
+          <input type="range" id="guest-slider" min="10" max="300" step="10" value="100">
+        </div>
+        <div class="field-group" id="budget-field">
+          <div class="budget-row">
+            <span class="label">Your budget</span>
+            <span class="amount" id="budget-amount">$3,200</span>
+          </div>
+          <input type="range" id="budget-slider" min="0" max="100" value="50">
+        </div>
+        <p class="match-count" id="match-count"></p>
+      </div>
+
+      <p class="list-hint">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        Click a vendor to see full pricing and request to book
+      </p>
+      <div class="vendor-list" id="vendor-list"></div>
+    </div>
+  </section>
+</main>
+
+<!-- SCREEN 3: VENDOR PROFILE -->
+<main id="screen-vendor">
+  <section>
+    <div class="wrap">
+      <div class="profile-head">
+        <div class="profile-photo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+        </div>
+        <div class="profile-title">
+          <span class="cat-label" id="vendor-cat">Photography</span>
+          <h2 id="vendor-name">Vendor name</h2>
+          <p class="blurb" id="vendor-blurb"></p>
+        </div>
+      </div>
+
+      <div class="price-panel">
+        <h3>Priced upfront</h3>
+        <div id="price-lines"></div>
+        <div class="price-line total">
+          <span class="item">Total</span>
+          <span id="vendor-total">$0</span>
+        </div>
+      </div>
+
+      <div class="book-row">
+        <button class="cta-primary book" onclick="alert('This is a mock-up — in the full product this would send a booking request directly to the vendor.')">Request to book</button>
+        <p class="book-note">No quote request forms. No waiting on email.</p>
+      </div>
+
+      <button class="back-link" onclick="backToMatches()">← Back to matches</button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">VowFare prototype · not a live booking product</div>
+</footer>
+
+<script>
+  const CATEGORIES = {
+    venue: {
+      label: "Venue", min: 2000, max: 20000, step: 500, start: 8000,
+      vendors: [
+        { name: "Maple Hollow Barn", price: 3200, capacity: 120, blurb: "Rustic indoor/outdoor barn venue, seats up to 120." },
+        { name: "Riverside Grange", price: 4100, capacity: 100, blurb: "Converted grange hall on the water, seats up to 100." },
+        { name: "The Ivy Terrace", price: 7400, capacity: 150, blurb: "Garden courtyard with covered pavilion, seats up to 150." },
+        { name: "Oakview Vineyard", price: 8900, capacity: 130, blurb: "Working vineyard with tasting room reception space." },
+        { name: "Aldergate Hall", price: 11800, capacity: 200, blurb: "Historic ballroom downtown, full catering kitchen included." },
+        { name: "The Kestrel Loft", price: 13200, capacity: 180, blurb: "Exposed-brick industrial loft, rooftop cocktail space." },
+        { name: "Cliffside Estate", price: 16500, capacity: 150, blurb: "Oceanview private estate, all-inclusive weekend rental." },
+        { name: "Windmere Manor", price: 18700, capacity: 250, blurb: "Restored manor house, formal gardens, on-site lodging." }
+      ]
+    },
+    catering: {
+      label: "Catering", min: 1500, max: 18000, step: 500, start: 6500,
+      vendors: [
+        { name: "Harvest & Hearth", price: 2800, capacity: 100, blurb: "Buffet-style, farm-to-table menu, 100 guests." },
+        { name: "Copper Kettle Kitchen", price: 3600, capacity: 120, blurb: "Family-style comfort food, 120 guests." },
+        { name: "Rosemary Table Co.", price: 5900, capacity: 130, blurb: "Plated dinner service with vegetarian and gluten-free menus." },
+        { name: "Basil & Bloom Catering", price: 7100, capacity: 150, blurb: "Mediterranean-inspired buffet with live action stations." },
+        { name: "Salt & Vine Catering", price: 9200, capacity: 150, blurb: "Family-style service with a curated wine pairing." },
+        { name: "The Butcher's Table", price: 10400, capacity: 180, blurb: "Plated multi-course dinner, dedicated sommelier." },
+        { name: "The Gilded Fork", price: 13500, capacity: 200, blurb: "Full-service fine dining, chef's tasting menu." },
+        { name: "Maison Noir Catering", price: 16200, capacity: 220, blurb: "White-glove service, custom menu design, 5-course dinner." }
+      ]
+    },
+    photography: {
+      label: "Photography", min: 800, max: 10000, step: 100, start: 3200,
+      vendors: [
+        { name: "Ava Lane Photography", price: 1450, blurb: "8-hour coverage, 1 shooter, online gallery." },
+        { name: "Golden Hour Studio", price: 1950, blurb: "8-hour coverage, 1 shooter, same-week sneak peek." },
+        { name: "Northfield Studio", price: 2900, blurb: "10-hour coverage, 2 shooters, engagement session included." },
+        { name: "Willow & Light", price: 3700, blurb: "10-hour coverage, 2 shooters, film + digital hybrid." },
+        { name: "Wren & Co.", price: 4600, blurb: "Full-day coverage, second shooter, same-day preview edits." },
+        { name: "Hazel Grove Photo", price: 5800, blurb: "Full-day coverage, drone add-on, custom-bound album." },
+        { name: "Marlowe Editorial", price: 7200, blurb: "Editorial-style full weekend coverage, printed album included." },
+        { name: "Atelier Lumen", price: 9100, blurb: "Multi-day coverage, two photographers, fine-art prints." }
+      ]
+    },
+    florals: {
+      label: "Florals & decor", min: 500, max: 8000, step: 100, start: 2100,
+      vendors: [
+        { name: "Petal & Pine", price: 950, capacity: 80, blurb: "Bouquets, boutonnieres, and simple ceremony arch florals." },
+        { name: "Sparrow & Stem", price: 1400, capacity: 100, blurb: "Bouquets plus reception centerpieces for up to 10 tables." },
+        { name: "The Wildflower Room", price: 2200, capacity: 120, blurb: "Full ceremony and reception florals, seasonal blooms." },
+        { name: "Honeybloom Design", price: 2900, capacity: 130, blurb: "Garden-style arrangements with hanging installations." },
+        { name: "Bloom & Bough", price: 3900, capacity: 150, blurb: "Large-scale installations, custom arch, table runners." },
+        { name: "Fern & Fable", price: 4800, capacity: 170, blurb: "Whimsical florals with foraged greenery, full tablescapes." },
+        { name: "Ateliér Fleur", price: 6100, capacity: 200, blurb: "Luxury design, imported blooms, full venue transformation." },
+        { name: "The Botanist's Table", price: 7400, capacity: 220, blurb: "Editorial-grade floral art direction, ceiling installations." }
+      ]
+    },
+    music: {
+      label: "Music", min: 500, max: 7000, step: 100, start: 1800,
+      vendors: [
+        { name: "DJ Marcus Reyes", price: 850, blurb: "5-hour DJ set, MC services, basic sound system." },
+        { name: "Echo Lane DJs", price: 1300, blurb: "6-hour DJ set, uplighting package, wireless mics." },
+        { name: "Late Bloom Trio", price: 1900, blurb: "Live acoustic trio for ceremony and cocktail hour." },
+        { name: "Cardinal Strings Quartet", price: 2600, blurb: "String quartet for ceremony plus dinner background sets." },
+        { name: "The River Road Band", price: 3400, blurb: "6-piece live band, full reception, dance-floor lighting." },
+        { name: "Northlight Collective", price: 4500, blurb: "8-piece live band with horn section, MC included." },
+        { name: "Solstice Sound Collective", price: 5600, blurb: "DJ + live horn section, custom setlist consultation." },
+        { name: "The Fairview Orchestra", price: 6700, blurb: "12-piece orchestra, full evening of live music." }
+      ]
+    },
+    attire: {
+      label: "Attire", min: 300, max: 6000, step: 100, start: 1600,
+      vendors: [
+        { name: "Thistle & Thread", price: 650, blurb: "Off-the-rack gown rental with alterations included." },
+        { name: "Marlow & Grey Suiting", price: 950, blurb: "Rental suit for two, tailored fittings included." },
+        { name: "Birchwood Bridal", price: 1500, blurb: "Made-to-order gown, one fitting, accessories included." },
+        { name: "Camden & Row Suiting", price: 2200, blurb: "Custom suit for two, two fittings included." },
+        { name: "Ivory Row Bridal", price: 2800, blurb: "Designer sample gown, custom alterations, veil included." },
+        { name: "The Groom's Quarter", price: 3500, blurb: "Fully custom tuxedo for the wedding party, up to 6." },
+        { name: "Atelier Noor", price: 4700, blurb: "Fully custom gown and suit, hand finishing." },
+        { name: "Maison Vale Couture", price: 5600, blurb: "Bespoke gown design, multiple fittings, hand embroidery." }
+      ]
+    },
+    beauty: {
+      label: "Hair & makeup", min: 150, max: 3000, step: 50, start: 650,
+      vendors: [
+        { name: "Dana Ferris Beauty", price: 280, blurb: "Bridal hair and makeup, one trial included." },
+        { name: "Willowbrook Beauty Bar", price: 420, blurb: "Hair and makeup for bride plus 1, no trial." },
+        { name: "Studio Eleven", price: 620, blurb: "Hair and makeup for bride plus 2, trial included." },
+        { name: "The Vanity Room", price: 850, blurb: "Hair and makeup for bride plus 4, trial included." },
+        { name: "The Powder Room Co.", price: 1150, blurb: "Full bridal party coverage, on-site team of 3." },
+        { name: "Gilt & Glow Artistry", price: 1600, blurb: "Full bridal party plus mother-of-bride, airbrush option." },
+        { name: "Lumière Beauty Bar", price: 2100, blurb: "Luxury airbrush service, touch-ups through reception." },
+        { name: "The Atelier Beauty Studio", price: 2600, blurb: "Editorial-level styling, two artists, full-day availability." }
+      ]
+    },
+    rentals: {
+      label: "Rentals", min: 300, max: 6000, step: 100, start: 1400,
+      vendors: [
+        { name: "Common Table Rentals", price: 650, capacity: 100, blurb: "Tables, chairs, and linens for up to 100 guests." },
+        { name: "Fieldstone Event Rentals", price: 1050, capacity: 120, blurb: "Farm tables, cross-back chairs, basic linens." },
+        { name: "Amber & Oak Event Co.", price: 1550, capacity: 130, blurb: "Farmhouse tables, market lighting, lounge set." },
+        { name: "The Linen Loft", price: 2100, capacity: 120, blurb: "Upgraded linens, glassware, and place settings for 120." },
+        { name: "Grandview Rental Co.", price: 2900, capacity: 150, blurb: "Tenting, full lighting design, dance floor." },
+        { name: "Elm & Ivory Event Rentals", price: 3700, capacity: 180, blurb: "Clear-top tent, chandelier lighting, full furniture suite." },
+        { name: "The Tented Table", price: 4600, capacity: 200, blurb: "Full luxury tenting and furniture package." },
+        { name: "Grand Pavilion Rentals", price: 5500, capacity: 250, blurb: "Sailcloth tenting, custom flooring, full lounge design." }
+      ]
+    }
+  };
+
+  const GUEST_FILTER_CATEGORIES = ["venue", "catering", "rentals", "florals"];
+
+  let state = { category: "photography", budget: 3200, guestCount: 100, selectedVendor: null };
+
+  function renderChipGrid(){
+    const grid = document.getElementById("chip-grid");
+    grid.innerHTML = "";
+    Object.entries(CATEGORIES).forEach(([key, cat]) => {
+      const btn = document.createElement("button");
+      btn.className = "chip";
+      btn.onclick = () => openMatches(key);
+      btn.innerHTML = `<span class="name">${cat.label}</span><span class="range">$${cat.min.toLocaleString()} – $${cat.max.toLocaleString()}</span>`;
+      grid.appendChild(btn);
+    });
+  }
+
+  function showScreen(id){
+    document.querySelectorAll("main").forEach(m => m.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    window.scrollTo({top:0, behavior:"instant"});
+    renderCrumbs();
+  }
+
+  function renderCrumbs(){
+    const el = document.getElementById("crumbs");
+    const active = document.querySelector("main.active").id;
+    if(active === "screen-home"){ el.innerHTML = ""; return; }
+    const cat = CATEGORIES[state.category];
+    if(active === "screen-matches"){
+      el.innerHTML = `<button onclick="goHome()">Home</button><span class="sep">/</span>${cat.label}`;
+    } else if(active === "screen-vendor"){
+      el.innerHTML = `<button onclick="goHome()">Home</button><span class="sep">/</span><button onclick="backToMatches()">${cat.label}</button><span class="sep">/</span>${state.selectedVendor.name}`;
+    }
+  }
+
+  function goHome(){ showScreen("screen-home"); }
+
+  function openMatches(categoryKey){
+    state.category = categoryKey;
+    const cat = CATEGORIES[categoryKey];
+    state.budget = cat.start;
+
+    document.getElementById("matches-kicker").textContent = cat.label;
+    document.getElementById("matches-title").textContent = "Set a budget, see who fits it.";
+
+    const slider = document.getElementById("budget-slider");
+    slider.min = cat.min; slider.max = cat.max; slider.step = cat.step; slider.value = cat.start;
+
+    const guestField = document.getElementById("guest-field");
+    const budgetField = document.getElementById("budget-field");
+    const usesGuestFilter = GUEST_FILTER_CATEGORIES.includes(categoryKey);
+    guestField.style.display = usesGuestFilter ? "" : "none";
+    budgetField.classList.toggle("divided", usesGuestFilter);
+    if(usesGuestFilter){
+      document.getElementById("guest-slider").value = state.guestCount;
+    }
+
+    renderVendorList();
+    showScreen("screen-matches");
+  }
+
+  function renderVendorList(){
+    const cat = CATEGORIES[state.category];
+    const usesGuestFilter = GUEST_FILTER_CATEGORIES.includes(state.category);
+
+    document.getElementById("budget-amount").textContent = "$" + Number(state.budget).toLocaleString();
+    document.getElementById("guest-amount").textContent = state.guestCount + " guests";
+
+    const list = document.getElementById("vendor-list");
+    list.innerHTML = "";
+    const sorted = [...cat.vendors].sort((a,b) => a.price - b.price);
+    let fitCount = 0;
+
+    sorted.forEach(v => {
+      const fitsBudget = v.price <= state.budget;
+      const fitsGuests = !usesGuestFilter || v.capacity >= state.guestCount;
+      const fits = fitsBudget && fitsGuests;
+      if(fits) fitCount++;
+
+      let tag = "";
+      if(fits){
+        tag = '<span class="fits-tag">Fits your budget' + (usesGuestFilter ? " & guest count" : "") + '</span>';
+      } else if(fitsBudget && !fitsGuests){
+        tag = '<span class="fits-tag out">Too small for your guest count</span>';
+      } else if(!fitsBudget && fitsGuests && usesGuestFilter){
+        tag = '<span class="fits-tag out">Over budget</span>';
+      }
+
+      const card = document.createElement("button");
+      card.className = "vendor-card" + (fits ? "" : " out-of-budget");
+      card.onclick = () => openVendor(v);
+      card.innerHTML = `
+        <div>
+          <div class="vname">${v.name}</div>
+          <div class="vblurb">${v.blurb}</div>
+          ${usesGuestFilter && v.capacity ? `<span class="vcap">Up to ${v.capacity} guests</span>` : ""}
+          ${tag}
+        </div>
+        <div class="vprice-col">
+          <div class="vprice">$${v.price.toLocaleString()}</div>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+      `;
+      list.appendChild(card);
+    });
+
+    const guestNote = usesGuestFilter ? ` for ${state.guestCount} guests` : "";
+    document.getElementById("match-count").innerHTML = `<strong>${fitCount} of ${sorted.length}</strong> ${cat.label.toLowerCase()} vendors fit this budget${guestNote}.`;
+  }
+
+  document.getElementById("budget-slider").addEventListener("input", (e) => {
+    state.budget = Number(e.target.value);
+    renderVendorList();
+  });
+
+  document.getElementById("guest-slider").addEventListener("input", (e) => {
+    state.guestCount = Number(e.target.value);
+    renderVendorList();
+  });
+
+  function openVendor(vendor){
+    state.selectedVendor = vendor;
+    const cat = CATEGORIES[state.category];
+    document.getElementById("vendor-cat").textContent = cat.label;
+    document.getElementById("vendor-name").textContent = vendor.name;
+    document.getElementById("vendor-blurb").textContent = vendor.blurb;
+
+    const base = Math.round(vendor.price * 0.85);
+    const addOn = vendor.price - base;
+    const linesEl = document.getElementById("price-lines");
+    linesEl.innerHTML = `
+      <div class="price-line"><span class="item">Base package</span><span>$${base.toLocaleString()}</span></div>
+      <div class="price-line"><span class="item">Travel & add-ons</span><span>$${addOn.toLocaleString()}</span></div>
+    `;
+    document.getElementById("vendor-total").textContent = "$" + vendor.price.toLocaleString();
+
+    showScreen("screen-vendor");
+  }
+
+  function backToMatches(){
+    renderVendorList();
+    showScreen("screen-matches");
+  }
+
+  renderChipGrid();
+</script>
+
+</body>
+</html>
