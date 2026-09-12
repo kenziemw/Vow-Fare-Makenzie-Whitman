@@ -64,6 +64,8 @@ This screen shows the payoff of the platform. It gives the user a clear price br
 
 ## 4. Design Justification and First Read
 
+**The affordance sentence:** The one thing a first-time visitor needs to walk away with on the landing screen is: *"Set a budget for each vendor, see who actually fits it, and book them directly — no emailing around, no waiting on quotes."* Everything else on that screen either says this directly (headline, subheading) or gets people moving toward it (the "Set your budget" button and the category grid).
+
 When I opened the live prototype, I think the landing page mostly communicates the main idea right away. There is one main headline, a short subheading, and a primary "Set your budget" button. The category grid below it supports the same main action, so I do not think it takes away too much from the main purpose of the page.
 
 The main thing I would want to test again is the category grid because it is the only part of the landing page that could compete with the main button for attention.
