@@ -58,4 +58,4 @@ Opening the live URL fresh:
 
 ![After: grouped by common region](./after.png)
 
-"It looks generic" isn't the issue here — the specific problem was that the original list signaled fit only through a low-contrast opacity difference on individual cards, which is easy to miss at a glance and doesn't tell you *how many* vendors are outside your range. Grouping by common region and labeling the count fixes both.
+The specific problem here was that the original list signaled fit only through a low-contrast opacity difference on individual cards, which is easy to miss at a glance and doesn't tell you *how many* vendors are outside your range. Grouping by common region and labeling the count fixes both.
