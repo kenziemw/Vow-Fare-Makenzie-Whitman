@@ -86,7 +86,30 @@
   .chip .name{font-weight:600; font-size:14.5px; margin-bottom:4px; display:block;}
   .chip .range{font-size:12.5px; color:var(--ink-soft);}
 
-  /* ---- Screen 2: Budget -> Matches ---- */
+  /* ---- Screen 2: Budget dashboard ---- */
+  .dashboard-head{max-width:680px; margin-bottom:28px;}
+  .dashboard-head .kicker{font-size:13px; color:var(--sage-dark); font-weight:500; margin-bottom:10px;}
+  .dashboard-head h2{font-size:clamp(1.7rem,3.5vw,2.35rem);}
+  .dashboard-head .sub{margin-top:12px;color:var(--ink-soft);max-width:58ch;}
+  .total-budget-card{background:var(--sage-dark);color:var(--stock);padding:26px 24px;margin-bottom:18px;}
+  .total-budget-card .label{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#DCE8DA;}
+  .total-budget-row{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-top:8px;flex-wrap:wrap;}
+  .total-budget-row .amount{font-family:'Newsreader',serif;font-size:34px;}
+  .total-budget-card input[type="range"]{accent-color:#C9DCC6;max-width:420px;flex:1;min-width:220px;}
+  .allocation-summary{background:var(--stock);border:1px solid var(--line);padding:18px 20px;margin-bottom:18px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;font-size:14px;}
+  .allocation-summary strong{font-family:'Newsreader',serif;font-size:20px;font-weight:500;display:block;}
+  .budget-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+  @media(max-width:700px){.budget-grid{grid-template-columns:1fr;}}
+  .budget-category{background:var(--stock);border:1px solid var(--line);padding:20px;}
+  .budget-category-head{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:14px;}
+  .budget-category-name{font-weight:600;font-size:14.5px;}
+  .budget-category-amount{font-family:'Newsreader',serif;font-size:21px;}
+  .budget-category input[type="range"]{width:100%;}
+  .budget-category-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;}
+  .budget-category-foot span{font-size:12px;color:var(--ink-soft);}
+  .view-vendors{background:none;border:none;padding:0;color:var(--sage-dark);font-weight:600;font-size:13px;text-decoration:underline;}
+
+  /* ---- Screen 3: Budget -> Matches ---- */
   section{padding:52px 0;}
   .matches-head{max-width:640px; margin:0 auto 8px;}
   .matches-head .kicker{font-size:13px; color:var(--sage-dark); font-weight:500; margin-bottom:10px;}
@@ -195,7 +218,7 @@
       <p class="kicker">Wedding vendor booking, priced upfront</p>
       <h1>No connections. Just "I do."</h1>
       <p class="sub">Set a budget for every vendor, compare real pricing, and book direct — no layovers, no back-and-forth.</p>
-      <button class="cta-primary" onclick="openMatches('photography')">Set your budget</button>
+      <button class="cta-primary" onclick="openDashboard()">Set your budget</button>
     </div>
   </section>
   <section class="cat-picker">
@@ -207,6 +230,17 @@
       <div class="chip-grid" id="chip-grid"></div>
     </div>
   </section>
+</main>
+
+<!-- SCREEN 2: BUDGET DASHBOARD -->
+<main id="screen-dashboard">
+  <section><div class="wrap">
+    <button class="back-link top" onclick="goHome()">← Back to home</button>
+    <div class="dashboard-head"><p class="kicker">Your wedding budget</p><h2>Build your budget, then shop within it.</h2><p class="sub">Set your overall budget and decide what you want to spend in each category. Open any category to see vendors that fit what you planned.</p></div>
+    <div class="total-budget-card"><span class="label">Total wedding vendor budget</span><div class="total-budget-row"><span class="amount" id="total-budget-amount">$30,000</span><input type="range" id="total-budget-slider" min="5000" max="80000" step="1000" value="30000"></div></div>
+    <div class="allocation-summary"><div><span>Allocated</span><strong id="allocated-amount">$0</strong></div><div><span>Still available</span><strong id="remaining-amount">$0</strong></div></div>
+    <div class="budget-grid" id="budget-grid"></div>
+  </div></section>
 </main>
 
 <!-- SCREEN 2: BUDGET -> MATCHES -->
@@ -398,7 +432,8 @@
 
   const GUEST_FILTER_CATEGORIES = ["venue", "catering", "rentals", "florals"];
 
-  let state = { category: "photography", budget: 3200, guestCount: 100, selectedVendor: null };
+  let state = { category: "photography", budget: 3200, guestCount: 100, selectedVendor: null, totalBudget: 30000, categoryBudgets: {} };
+  Object.entries(CATEGORIES).forEach(([key, cat]) => state.categoryBudgets[key] = cat.start);
 
   function renderChipGrid(){
     const grid = document.getElementById("chip-grid");
@@ -423,26 +458,60 @@
     const el = document.getElementById("crumbs");
     const active = document.querySelector("main.active").id;
     if(active === "screen-home"){ el.innerHTML = ""; return; }
+    if(active === "screen-dashboard"){ el.innerHTML = `<button onclick="goHome()">Home</button><span class="sep">/</span>Budget`; return; }
     const cat = CATEGORIES[state.category];
     if(active === "screen-matches"){
-      el.innerHTML = `<button onclick="goHome()">Home</button><span class="sep">/</span>${cat.label}`;
+      el.innerHTML = `<button onclick="goHome()">Home</button><span class="sep">/</span><button onclick="openDashboard()">Budget</button><span class="sep">/</span>${cat.label}`;
     } else if(active === "screen-vendor"){
-      el.innerHTML = `<button onclick="goHome()">Home</button><span class="sep">/</span><button onclick="backToMatches()">${cat.label}</button><span class="sep">/</span>${state.selectedVendor.name}`;
+      el.innerHTML = `<button onclick="goHome()">Home</button><span class="sep">/</span><button onclick="openDashboard()">Budget</button><span class="sep">/</span><button onclick="backToMatches()">${cat.label}</button><span class="sep">/</span>${state.selectedVendor.name}`;
     }
   }
 
   function goHome(){ showScreen("screen-home"); }
 
+  function openDashboard(){
+    renderBudgetDashboard();
+    showScreen("screen-dashboard");
+  }
+
+  function renderBudgetDashboard(){
+    document.getElementById("total-budget-amount").textContent = "$" + state.totalBudget.toLocaleString();
+    document.getElementById("total-budget-slider").value = state.totalBudget;
+    const grid = document.getElementById("budget-grid");
+    grid.innerHTML = "";
+    Object.entries(CATEGORIES).forEach(([key, cat]) => {
+      const card = document.createElement("div");
+      card.className = "budget-category";
+      const value = state.categoryBudgets[key];
+      card.innerHTML = `<div class="budget-category-head"><span class="budget-category-name">${cat.label}</span><span class="budget-category-amount" id="dash-amount-${key}">$${value.toLocaleString()}</span></div><input type="range" min="${cat.min}" max="${cat.max}" step="${cat.step}" value="${value}" data-budget-category="${key}"><div class="budget-category-foot"><span>${cat.vendors.filter(v => v.price <= value).length} vendors in budget</span><button class="view-vendors" onclick="openMatches('${key}')">View vendors →</button></div>`;
+      grid.appendChild(card);
+    });
+    grid.querySelectorAll("input[data-budget-category]").forEach(slider => slider.addEventListener("input", e => {
+      const key = e.target.dataset.budgetCategory;
+      state.categoryBudgets[key] = Number(e.target.value);
+      renderBudgetDashboard();
+    }));
+    renderAllocationSummary();
+  }
+
+  function renderAllocationSummary(){
+    const allocated = Object.values(state.categoryBudgets).reduce((sum, n) => sum + n, 0);
+    const remaining = state.totalBudget - allocated;
+    document.getElementById("allocated-amount").textContent = "$" + allocated.toLocaleString();
+    const rem = document.getElementById("remaining-amount");
+    rem.textContent = (remaining < 0 ? "−$" + Math.abs(remaining).toLocaleString() : "$" + remaining.toLocaleString());
+  }
+
   function openMatches(categoryKey){
     state.category = categoryKey;
     const cat = CATEGORIES[categoryKey];
-    state.budget = cat.start;
+    state.budget = state.categoryBudgets[categoryKey] ?? cat.start;
 
     document.getElementById("matches-kicker").textContent = cat.label;
     document.getElementById("matches-title").textContent = "Set a budget, see who fits it.";
 
     const slider = document.getElementById("budget-slider");
-    slider.min = cat.min; slider.max = cat.max; slider.step = cat.step; slider.value = cat.start;
+    slider.min = cat.min; slider.max = cat.max; slider.step = cat.step; slider.value = state.budget;
 
     const guestField = document.getElementById("guest-field");
     const budgetField = document.getElementById("budget-field");
@@ -523,7 +592,13 @@
 
   document.getElementById("budget-slider").addEventListener("input", (e) => {
     state.budget = Number(e.target.value);
+    state.categoryBudgets[state.category] = state.budget;
     renderVendorList();
+  });
+
+  document.getElementById("total-budget-slider").addEventListener("input", (e) => {
+    state.totalBudget = Number(e.target.value);
+    renderBudgetDashboard();
   });
 
   document.getElementById("guest-slider").addEventListener("input", (e) => {
