@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VowFare Engineering Playbook</title>
+<meta name="description" content="Day-one engineering playbook for the VowFare team: language, IDE, process, Git controls, issue tracking, AI guardrails, code quality, testing, and operations.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top, 0px);
+    padding-bottom:env(safe-area-inset-bottom, 0px);
+
+    --bg:#F5F6F2;
+    --surface:#FFFFFF;
+    --ink:#23282B;
+    --ink-soft:#5B6165;
+    --line:rgba(35,40,43,0.13);
+    --sage:#5C7A5F;
+    --sage-deep:#3F5A43;
+    --sage-pale:#E4ECE3;
+    --code-bg:#1B2023;
+    --code-ink:#E6EBE4;
+    --code-bar:#252B2F;
+    --warn-bg:#FBF1D9;
+    --warn-ink:#6A4A0C;
+    --hdr:58px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#14181A;
+      --surface:#1C2124;
+      --ink:#E6EBE4;
+      --ink-soft:#A2AAA9;
+      --line:rgba(230,235,228,0.14);
+      --sage:#8DB394;
+      --sage-deep:#A9CBAF;
+      --sage-pale:#223029;
+      --code-bg:#0E1213;
+      --code-ink:#E6EBE4;
+      --code-bar:#1A2023;
+      --warn-bg:#33291A;
+      --warn-ink:#F0D9A6;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#14181A;
+    --surface:#1C2124;
+    --ink:#E6EBE4;
+    --ink-soft:#A2AAA9;
+    --line:rgba(230,235,228,0.14);
+    --sage:#8DB394;
+    --sage-deep:#A9CBAF;
+    --sage-pale:#223029;
+    --code-bg:#0E1213;
+    --code-ink:#E6EBE4;
+    --code-bar:#1A2023;
+    --warn-bg:#33291A;
+    --warn-ink:#F0D9A6;
+  }
+
+  *,*::before,*::after{box-sizing:inherit;}
+  html{
+    scroll-behavior:smooth;
+    scroll-padding-top:calc(var(--hdr) + env(safe-area-inset-top, 0px) + 16px);
+  }
+  @media (max-width:900px){
+    html{scroll-padding-top:calc(var(--hdr) + env(safe-area-inset-top, 0px) + 64px);}
+  }
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} }
+
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size:16px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:'Newsreader', Georgia, 'Times New Roman', serif; font-weight:500; letter-spacing:-0.01em; margin:0; color:var(--ink);}
+  h1{font-size:clamp(2.1rem, 5vw, 3rem); line-height:1.1;}
+  h2{font-size:clamp(1.55rem, 3vw, 2rem); line-height:1.2;}
+  h3{font-size:1.2rem; line-height:1.3; margin-top:2rem; margin-bottom:0.5rem;}
+  p{margin:0 0 1rem;}
+  a{color:var(--sage-deep); text-underline-offset:3px;}
+  a:hover{color:var(--ink);}
+  :focus-visible{outline:2px solid var(--sage); outline-offset:3px; border-radius:2px;}
+  ::selection{background:var(--sage); color:#fff;}
+  code{font-family:'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size:0.86em; background:var(--sage-pale); padding:0.12em 0.4em; border-radius:3px;}
+  kbd{font-family:'JetBrains Mono', ui-monospace, monospace; font-size:0.82em; border:1px solid var(--line); border-bottom-width:2px; border-radius:4px; padding:0.05em 0.4em; background:var(--surface);}
+  ul,ol{margin:0 0 1rem; padding-left:1.3rem;}
+  li{margin-bottom:0.35rem;}
+
+  .skip{position:absolute; left:-9999px; top:8px; background:var(--sage-deep); color:#fff; padding:8px 14px; border-radius:4px; z-index:50;}
+  .skip:focus{left:12px;}
+
+  /* header */
+  .topbar{
+    position:sticky; top:env(safe-area-inset-top, 0px); z-index:30;
+    height:var(--hdr);
+    background:var(--bg);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar-inner{max-width:1180px; height:100%; margin:0 auto; padding:0 24px; display:flex; align-items:center; justify-content:space-between; gap:16px;}
+  .brand{display:flex; align-items:center; gap:10px; font-family:'Newsreader', Georgia, serif; font-size:1.15rem; font-weight:500; color:var(--ink); text-decoration:none;}
+  .brand span{color:var(--sage-deep);}
+  .top-actions{display:flex; align-items:center; gap:10px;}
+  .btn{display:inline-flex; align-items:center; gap:6px; font:inherit; font-size:0.88rem; font-weight:500; color:var(--ink); background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:7px 12px; text-decoration:none; cursor:pointer;}
+  .btn:hover{border-color:var(--sage); color:var(--ink);}
+  @media (max-width:560px){ .btn.hide-sm{display:none;} }
+
+  /* layout */
+  .layout{max-width:1180px; margin:0 auto; padding:0 24px; display:grid; grid-template-columns:230px minmax(0,1fr); gap:56px;}
+  .toc{position:sticky; top:calc(var(--hdr) + env(safe-area-inset-top, 0px) + 24px); align-self:start; padding:32px 0; max-height:calc(100vh - var(--hdr) - 24px); overflow-y:auto;}
+  .toc p{font-size:0.85rem; font-weight:600; color:var(--ink-soft); margin:0 0 10px;}
+  .toc ol{list-style:none; margin:0; padding:0;}
+  .toc li{margin:0;}
+  .toc a{display:block; padding:6px 12px; margin-left:-12px; border-left:2px solid transparent; color:var(--ink-soft); text-decoration:none; font-size:0.93rem;}
+  .toc a:hover{color:var(--ink);}
+  .toc a[aria-current="true"]{color:var(--sage-deep); border-left-color:var(--sage); font-weight:500;}
+  @media (max-width:900px){
+    .layout{grid-template-columns:minmax(0,1fr); gap:0;}
+    .toc{
+      position:sticky; top:calc(var(--hdr) + env(safe-area-inset-top, 0px)); z-index:20;
+      padding:0; max-height:none; overflow:visible;
+      background:var(--bg); border-bottom:1px solid var(--line); margin:0 -24px; padding:0 24px;
+    }
+    .toc p{display:none;}
+    .toc ol{display:flex; gap:6px; overflow-x:auto; padding:10px 0; scrollbar-width:thin;}
+    .toc a{white-space:nowrap; border:1px solid var(--line); border-radius:999px; margin-left:0; padding:5px 12px; font-size:0.85rem; background:var(--surface);}
+    .toc a[aria-current="true"]{border-color:var(--sage); background:var(--sage-pale);}
+  }
+
+  main{padding:40px 0 80px; min-width:0;}
+  .prose{max-width:760px;}
+
+  /* hero */
+  .hero{padding:12px 0 36px; border-bottom:1px solid var(--line); margin-bottom:8px;}
+  .hero .lede{font-size:1.12rem; color:var(--ink-soft); max-width:60ch; margin:18px 0 22px;}
+  .meta{display:flex; flex-wrap:wrap; gap:8px; margin:0; padding:0; list-style:none;}
+  .meta li{margin:0; font-size:0.86rem; border:1px solid var(--line); background:var(--surface); border-radius:999px; padding:4px 12px; color:var(--ink-soft);}
+  .meta a{color:var(--ink-soft);}
+
+  /* sections */
+  section{padding:48px 0 8px; border-bottom:1px solid var(--line);}
+  section:last-of-type{border-bottom:none;}
+  section > h2{margin-bottom:14px;}
+  .answer{
+    background:var(--sage-pale); border-left:3px solid var(--sage); border-radius:0 6px 6px 0;
+    padding:14px 18px; margin:0 0 22px;
+  }
+  .answer p{margin:0;}
+  .answer p + p{margin-top:6px;}
+  .answer strong{color:var(--sage-deep);}
+  .note{background:var(--warn-bg); color:var(--warn-ink); border-radius:6px; padding:12px 16px; margin:0 0 1.2rem; font-size:0.94rem;}
+  .note p{margin:0;}
+  .note a{color:inherit;}
+
+  /* tables */
+  .tablewrap{overflow-x:auto; margin:0 0 1.4rem; border:1px solid var(--line); border-radius:8px; background:var(--surface);}
+  table{border-collapse:collapse; width:100%; min-width:520px; font-size:0.93rem;}
+  th,td{text-align:left; vertical-align:top; padding:10px 14px; border-bottom:1px solid var(--line);}
+  th{font-weight:600; background:var(--sage-pale); color:var(--ink);}
+  tr:last-child td{border-bottom:none;}
+  td code{white-space:nowrap;}
+
+  /* steps */
+  .steps{list-style:none; padding:0; margin:0 0 1.2rem; counter-reset:step;}
+  .steps > li{counter-increment:step; position:relative; padding:0 0 22px 48px; margin:0; border-left:0;}
+  .steps > li::before{
+    content:counter(step); position:absolute; left:0; top:0; width:30px; height:30px; border-radius:50%;
+    background:var(--sage-deep); color:#fff; font-weight:600; font-size:0.88rem; display:flex; align-items:center; justify-content:center;
+  }
+  .steps > li::after{content:""; position:absolute; left:14px; top:34px; bottom:4px; width:2px; background:var(--line);}
+  .steps > li:last-child::after{display:none;}
+  .steps strong{display:block; margin-bottom:2px;}
+
+  .checklist{list-style:none; padding:0;}
+  .checklist li{position:relative; padding-left:28px;}
+  .checklist li::before{content:""; position:absolute; left:0; top:0.35em; width:16px; height:16px; border:1.5px solid var(--sage); border-radius:4px; background:var(--surface);}
+
+  /* code blocks */
+  .codewrap{margin:0 0 1.3rem; border-radius:8px; overflow:hidden; background:var(--code-bg);}
+  .codebar{display:flex; justify-content:space-between; align-items:center; gap:12px; padding:6px 8px 6px 14px; background:var(--code-bar); color:#9AA5A3; font-family:'JetBrains Mono', ui-monospace, monospace; font-size:0.78rem;}
+  .copy{font:inherit; font-size:0.78rem; color:#E6EBE4; background:transparent; border:1px solid rgba(230,235,228,0.25); border-radius:5px; padding:3px 10px; cursor:pointer;}
+  .copy:hover{background:rgba(230,235,228,0.1);}
+  pre{margin:0; padding:14px 16px; overflow-x:auto; color:var(--code-ink); background:var(--code-bg); font-family:'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size:0.84rem; line-height:1.6; tab-size:2;}
+  pre code{background:none; padding:0; font-size:inherit; color:inherit;}
+  .codewrap > pre{border-radius:0;}
+  pre:not(.wrapped){border-radius:8px; margin-bottom:1.3rem;}
+
+  footer{border-top:1px solid var(--line); padding:28px 24px 40px; text-align:center; font-size:0.88rem; color:var(--ink-soft);}
+  footer p{margin:0 0 4px;}
+
+  @media print{
+    .topbar,.toc,.copy,.skip{display:none;}
+    .layout{display:block;}
+    section{break-inside:avoid-page;}
+    .codewrap,pre{background:#f3f3f3; color:#000;}
+    pre{color:#000; background:#f3f3f3;}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#top" aria-label="VowFare Engineering Playbook, back to top">
+      <svg width="26" height="20" viewBox="0 0 34 24" fill="none" aria-hidden="true">
+        <circle cx="11" cy="12" r="8" stroke="currentColor" stroke-width="1.7" style="color:var(--sage-deep)"/>
+        <circle cx="21" cy="12" r="8" stroke="currentColor" stroke-width="1.7" style="color:var(--sage-deep)"/>
+        <path d="M22 3.5 L27.5 5.3 L22.5 6.8 L23.7 5 Z" fill="currentColor" style="color:var(--sage-deep)"/>
+      </svg>
+      <span style="color:var(--ink)">Vow<span>Fare</span> playbook</span>
+    </a>
+    <div class="top-actions">
+      <a class="btn hide-sm" href="https://github.com/kenziemw/Vow-Fare-Makenzie-Whitman">GitHub repo</a>
+      <a class="btn hide-sm" href="https://kenziemw.github.io/Vow-Fare-Makenzie-Whitman/">Live site</a>
+      <button class="btn" id="themeToggle" type="button" aria-label="Toggle dark mode">Theme</button>
+    </div>
+  </div>
+</header>
+
+<div class="layout" id="top">
+  <nav class="toc" aria-label="Playbook sections">
+    <p>On this page</p>
+    <ol>
+      <li><a href="#quick-start">Quick start</a></li>
+      <li><a href="#language">1. Language</a></li>
+      <li><a href="#ide">2. IDE and setup</a></li>
+      <li><a href="#process">3. Development process</a></li>
+      <li><a href="#git">4. Git and controls</a></li>
+      <li><a href="#issues">5. Issue tracking</a></li>
+      <li><a href="#ai">6. AI agents</a></li>
+      <li><a href="#quality">7. Code quality</a></li>
+      <li><a href="#testing">8. Testing</a></li>
+      <li><a href="#ops">9. Other controls</a></li>
+    </ol>
+  </nav>
+
+  <main id="main">
+    <div class="hero">
+      <h1>VowFare engineering playbook</h1>
+      <p class="lede">Everything a new teammate needs to go from a blank laptop to a merged pull request on day one: what we build with, how we work, and which controls keep main safe.</p>
+      <ul class="meta">
+        <li>Updated October 8, 2026</li>
+        <li><a href="https://github.com/kenziemw/Vow-Fare-Makenzie-Whitman">Repo</a></li>
+        <li><a href="https://kenziemw.github.io/Vow-Fare-Makenzie-Whitman/">Live prototype</a></li>
+      </ul>
+    </div>
+
+    <div class="prose">
+
+    <section id="quick-start">
+      <h2>Quick start (about 20 minutes)</h2>
+      <p>Follow these in order. Each step links to the full detail further down.</p>
+      <ol class="steps">
+        <li>
+          <strong>Get access and secure your account</strong>
+          Accept the invitation to the <a href="https://github.com/kenziemw/Vow-Fare-Makenzie-Whitman">repo</a> (check your email or <a href="https://github.com/notifications">GitHub notifications</a>), then turn on two-factor authentication at <a href="https://github.com/settings/security">github.com/settings/security</a>. Two-factor is required for everyone.
+        </li>
+        <li>
+          <strong>Install the tools</strong>
+          <a href="https://git-scm.com/downloads">Git</a>, <a href="https://code.visualstudio.com/download">Visual Studio Code</a>, and the <a href="https://nodejs.org/en/download">current Node.js LTS</a>. Details in <a href="#ide">section 2</a>.
+        </li>
+        <li>
+          <strong>Clone the repo and open it in VS Code</strong>
+          <div class="codewrap"><div class="codebar"><span>terminal</span></div><pre class="wrapped" data-copy><code>git clone https://github.com/kenziemw/Vow-Fare-Makenzie-Whitman.git
+cd Vow-Fare-Makenzie-Whitman
+code .</code></pre></div>
+        </li>
+        <li>
+          <strong>Install dependencies and browsers</strong>
+          <div class="codewrap"><div class="codebar"><span>terminal</span></div><pre class="wrapped" data-copy><code>npm install
+npx playwright install chromium</code></pre></div>
+          This also installs the Git hooks that format and lint your code on every commit (<a href="#quality">section 7</a>).
+        </li>
+        <li>
+          <strong>Run the site locally</strong>
+          <div class="codewrap"><div class="codebar"><span>terminal</span></div><pre class="wrapped" data-copy><code>npm start</code></pre></div>
+          Open <code>http://127.0.0.1:5500</code>. You should see the VowFare landing screen; click <em>Set your budget</em> and open a vendor to check all three screens work.
+        </li>
+        <li>
+          <strong>Confirm your setup is healthy</strong>
+          <div class="codewrap"><div class="codebar"><span>terminal</span></div><pre class="wrapped" data-copy><code>npm run lint &amp;&amp; npm run format:check &amp;&amp; npm test</code></pre></div>
+          All three should pass before you change anything. If one fails on a fresh clone, tell the team in chat; that is a bug in our setup, not in you.
+        </li>
+        <li>
+          <strong>Ship something small</strong>
+          Pick a card from <em>Ready</em> on the <a href="#issues">project board</a>, create a branch, and open a pull request following <a href="#git">section 4</a>. Your first PR can be as small as adding yourself to the team list in this playbook.
+        </li>
+      </ol>
+    </section>
+
+    <section id="stack">
+      <h2>The stack at a glance</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Area</th><th>What we use</th><th>Where to start</th></tr></thead>
+          <tbody>
+            <tr><td>Language</td><td>HTML5, CSS3, vanilla JavaScript (ES2022). No framework, no build step.</td><td><a href="#language">Section 1</a></td></tr>
+            <tr><td>IDE</td><td>Visual Studio Code with ESLint, Prettier, and Live Server</td><td><a href="https://code.visualstudio.com/download">Download</a>, <a href="#ide">section 2</a></td></tr>
+            <tr><td>Process</td><td>Kanban with work-in-progress limits and a weekly review</td><td><a href="#process">Section 3</a></td></tr>
+            <tr><td>Git</td><td>GitHub Flow, Conventional Commits, protected <code>main</code>, one approval per PR</td><td><a href="#git">Section 4</a></td></tr>
+            <tr><td>Issues</td><td>GitHub Issues plus a GitHub Projects board</td><td><a href="#issues">Section 5</a></td></tr>
+            <tr><td>AI agents</td><td>Claude (chat and Claude Code) and GitHub Copilot, under written guardrails</td><td><a href="#ai">Section 6</a></td></tr>
+            <tr><td>Code quality</td><td>ESLint, Prettier, Husky, lint-staged, commitlint, Dependabot, CodeQL, secret scanning</td><td><a href="#quality">Section 7</a></td></tr>
+            <tr><td>Testing</td><td>Playwright end-to-end tests, run locally and in GitHub Actions</td><td><a href="#testing">Section 8</a></td></tr>
+            <tr><td>Hosting and ops</td><td>GitHub Pages deployed from <code>main</code>, GitHub Actions for CI</td><td><a href="#ops">Section 9</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="language">
+      <h2>1. Language selection</h2>
+      <div class="answer">
+        <p><strong>We use HTML5, CSS3, and vanilla JavaScript (ES2022).</strong> No framework, no bundler, no build step.</p>
+        <p>Node.js (current LTS) is used only for developer tooling such as ESLint and Playwright. It is never shipped to the browser.</p>
+      </div>
+
+      <h3>Why this choice</h3>
+      <ul>
+        <li><strong>The product today is a static, three-screen prototype.</strong> It lives in a single <code>index.html</code> with no server, database, or login, so <code>git push</code> is the whole deploy.</li>
+        <li><strong>Nothing framework-specific to learn.</strong> Anyone who knows basic JavaScript can contribute on day one.</li>
+        <li><strong>Plain code is easy to review.</strong> AI assistants write plain HTML, CSS, and JS reliably, and reviewers can read every line of the diff without knowing a framework.</li>
+        <li><strong>Free hosting.</strong> GitHub Pages serves static files at no cost.</li>
+      </ul>
+
+      <h3>Alternatives we considered</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Option</th><th>Decision</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>React with Vite</td><td>Not yet</td><td>Adds JSX, a bundler, and config for a three-screen mock-up. Adopt when we pass roughly five screens or need shared state that is hard to manage by hand.</td></tr>
+            <tr><td>TypeScript</td><td>Not yet</td><td>Valuable once the vendor-matching logic moves into its own module. That extraction is the trigger to migrate.</td></tr>
+            <tr><td>A backend (Node, Supabase, or similar)</td><td>Not yet</td><td>We have no real vendor data, accounts, or bookings. When we do, the choice gets recorded as a short decision note in <code>docs/decisions/</code>.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Conventions</h3>
+      <ul>
+        <li>Two-space indentation, double quotes, semicolons. Prettier enforces this, so do not argue about it in review.</li>
+        <li><code>const</code> by default, <code>let</code> when you must reassign, never <code>var</code>. Always <code>===</code>.</li>
+        <li><code>camelCase</code> for JavaScript, <code>kebab-case</code> for CSS classes and file names.</li>
+        <li>Colors, fonts, and spacing come from CSS custom properties declared in <code>:root</code>. Do not hard-code a hex value twice.</li>
+        <li>Use semantic HTML (<code>button</code> for actions, <code>a</code> for navigation, real headings) so keyboard and screen-reader users can follow the three-screen flow.</li>
+        <li>New code attaches events with <code>addEventListener</code>. The prototype still has some inline <code>onclick</code> handlers; migrate them when you touch the surrounding code.</li>
+      </ul>
+    </section>
+
+    <section id="ide">
+      <h2>2. IDE selection and setup</h2>
+      <div class="answer">
+        <p><strong>Visual Studio Code.</strong> Download it at <a href="https://code.visualstudio.com/download">code.visualstudio.com/download</a>.</p>
+        <p>We chose it because it is free, runs on macOS, Windows, and Linux, and has first-class extensions for every tool in this playbook.</p>
+      </div>
+
+      <h3>Setup steps</h3>
+      <ol>
+        <li>Install <a href="https://code.visualstudio.com/download">VS Code</a>, <a href="https://git-scm.com/downloads">Git</a>, and the <a href="https://nodejs.org/en/download">current Node.js LTS</a>. Check them with <code>git --version</code> and <code>node --version</code>.</li>
+        <li>Open the cloned repo folder: <em>File, Open Folder</em>, or run <code>code .</code> from the terminal.</li>
+        <li>VS Code will offer to install the workspace's recommended extensions (from <code>.vscode/extensions.json</code>). Click <em>Install</em>. To install them by hand, run the commands below.</li>
+        <li>Sign in to GitHub from the <em>Accounts</em> menu (bottom left) so the pull request extension can list and review PRs without leaving the editor.</li>
+        <li>Right-click <code>index.html</code> and choose <em>Open with Live Server</em>, or run <code>npm start</code>. The site opens on port 5500.</li>
+        <li>Check the setup: add a stray <code>var x = 1</code> to the script. You should see a red ESLint squiggle. Save the file and Prettier should reformat it. Undo your change.</li>
+      </ol>
+
+      <div class="codewrap"><div class="codebar"><span>terminal: install the extensions</span></div><pre class="wrapped" data-copy><code>code --install-extension dbaeg.vscode-eslint
+code --install-extension esbenp.prettier-vscode
+code --install-extension ritwickdey.LiveServer
+code --install-extension GitHub.vscode-pull-request-github
+code --install-extension ms-playwright.playwright
+code --install-extension GitHub.copilot</code></pre></div>
+
+      <div class="codewrap"><div class="codebar"><span>.vscode/settings.json</span></div><pre class="wrapped" data-copy><code>{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": { "source.fixAll.eslint": "explicit" },
+  "eslint.validate": ["javascript", "html"],
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "liveServer.settings.port": 5500
+}</code></pre></div>
+
+      <div class="codewrap"><div class="codebar"><span>.vscode/extensions.json</span></div><pre class="wrapped" data-copy><code>{
+  "recommendations": [
+    "dbaeg.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ritwickdey.LiveServer",
+    "GitHub.vscode-pull-request-github",
+    "ms-playwright.playwright"
+  ]
+}</code></pre></div>
+      <p>GitHub Copilot is optional and intentionally left out of the recommendations; see <a href="#ai">section 6</a> for the rules that apply when you use it.</p>
+    </section>
+
+    <section id="process">
+      <h2>3. Development strategy</h2>
+      <div class="answer">
+        <p><strong>Kanban with work-in-progress (WIP) limits</strong>, plus a short daily async check-in and a weekly planning and review.</p>
+        <p>We skip Scrum sprints because four teammates have uneven weekly availability around classes and deadlines. Continuous flow with WIP limits adapts to that better than a fixed two-week commitment.</p>
+      </div>
+
+      <h3>The board</h3>
+      <p>Five columns, left to right. A card only moves right when it meets the exit rule.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Column</th><th>A card is here when</th><th>WIP limit</th></tr></thead>
+          <tbody>
+            <tr><td>Backlog</td><td>It is an idea or an unrefined issue.</td><td>None</td></tr>
+            <tr><td>Ready</td><td>It meets the Definition of Ready below.</td><td>8 cards</td></tr>
+            <tr><td>In progress</td><td>One person is assigned and a branch exists.</td><td>2 per person</td></tr>
+            <tr><td>In review</td><td>A PR is open and CI is running or green. A reviewer picks it up within 24 hours.</td><td>4 cards</td></tr>
+            <tr><td>Done</td><td>The PR is merged and the change is verified on the live URL.</td><td>None</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>If a limit is full, help finish something already in flight (usually a review) before you start new work.</p>
+
+      <h3>The weekly rhythm</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>When</th><th>What</th><th>Length</th></tr></thead>
+          <tbody>
+            <tr><td>Every working day</td><td>Post in the team chat: what I finished, what I am doing next, what is blocking me.</td><td>2 minutes</td></tr>
+            <tr><td>Monday</td><td>Planning. Pull cards from Backlog into Ready, assign owners, and agree on the week's goal.</td><td>30 minutes</td></tr>
+            <tr><td>Friday</td><td>Review and retro. Demo the live URL, then agree on one thing to change next week.</td><td>20 minutes</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>If you are blocked for more than a day, say so in chat right away. A blocker that sits is the most expensive kind.</p>
+
+      <h3>Definition of Ready</h3>
+      <ul class="checklist">
+        <li>A user story: "As a couple planning a wedding, I want ___ so that ___."</li>
+        <li>Acceptance criteria written as checkable statements.</li>
+        <li>A link to the research or test finding that motivates it, so we build for evidence rather than opinion.</li>
+        <li>Small enough to finish in about a day. If not, split it.</li>
+        <li>A sketch or screenshot reference if it changes the UI.</li>
+      </ul>
+
+      <h3>Definition of Done</h3>
+      <ul class="checklist">
+        <li>Every acceptance criterion is met.</li>
+        <li><code>lint</code>, <code>format:check</code>, and <code>test</code> are green in CI.</li>
+        <li>At least one teammate other than the author approved the PR.</li>
+        <li>Merged to <code>main</code> by squash merge, and the issue closed automatically.</li>
+        <li>Verified on the live URL after GitHub Pages redeploys.</li>
+        <li>For UI changes, before and after screenshots are in the PR description.</li>
+      </ul>
+
+      <h3>A day in the life of one card</h3>
+      <ol>
+        <li>Pick the top card in <em>Ready</em>, assign yourself, and drag it to <em>In progress</em>.</li>
+        <li>Branch from the latest <code>main</code> using the naming rule in <a href="#git">section 4</a>.</li>
+        <li>Make small commits with Conventional Commit messages. Run the checks before you push.</li>
+        <li>Open a PR with <code>Closes #N</code> in the description. The card moves to <em>In review</em> automatically.</li>
+        <li>Respond to review comments, push fixes, and wait for green checks.</li>
+        <li>Squash and merge. Wait for Pages to redeploy, then check the live URL.</li>
+        <li>Confirm the card landed in <em>Done</em>, and pick the next one.</li>
+      </ol>
+    </section>
+
+    <section id="git">
+      <h2>4. Git strategy and controls</h2>
+      <div class="answer">
+        <p><strong>GitHub Flow.</strong> <code>main</code> is always deployable and is production. All work happens on short-lived branches that merge through reviewed pull requests.</p>
+        <p>Repo: <a href="https://github.com/kenziemw/Vow-Fare-Makenzie-Whitman">github.com/kenziemw/Vow-Fare-Makenzie-Whitman</a></p>
+      </div>
+
+      <h3>Branch naming</h3>
+      <p>Use <code>type/issue-number-short-summary</code>, all lowercase, words separated by hyphens. Keep branches alive for two or three days at most.</p>
+      <div class="codewrap"><div class="codebar"><span>examples</span></div><pre class="wrapped"><code>feature/14-empty-state-no-matches
+fix/21-slider-resets-guest-count
+docs/9-playbook-setup-steps
+chore/3-add-eslint-and-prettier</code></pre></div>
+      <p>Our first design revision was made on a branch (<code>group-out-of-budget</code>) and merged through a pull request, which is the pattern to follow for everything.</p>
+
+      <h3>Commit messages</h3>
+      <p>We follow <a href="https://www.conventionalcommits.org">Conventional Commits</a>: <code>type(scope): subject</code>. Write the subject in the imperative mood, keep it under 72 characters, and skip the trailing period. Use the body to explain why, not what.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Type</th><th>Use it for</th></tr></thead>
+          <tbody>
+            <tr><td><code>feat</code></td><td>A user-visible capability</td></tr>
+            <tr><td><code>fix</code></td><td>A bug fix</td></tr>
+            <tr><td><code>docs</code></td><td>README, playbook, comments</td></tr>
+            <tr><td><code>style</code></td><td>Formatting only, no behavior change</td></tr>
+            <tr><td><code>refactor</code></td><td>Code change with no behavior change</td></tr>
+            <tr><td><code>test</code></td><td>Adding or fixing tests</td></tr>
+            <tr><td><code>ci</code> and <code>chore</code></td><td>Pipelines, tooling, dependencies, config</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="codewrap"><div class="codebar"><span>good commit messages</span></div><pre class="wrapped"><code>feat(matches): group out-of-budget vendors into a separate section
+fix(slider): keep guest count when switching categories
+docs(readme): add before and after screenshots
+chore(deps): add playwright and http-server</code></pre></div>
+      <p>The <code>commit-msg</code> hook runs commitlint and rejects anything that does not follow this format (setup in <a href="#quality">section 7</a>).</p>
+
+      <h3>Review and approval controls on <code>main</code></h3>
+      <p>These are configured once as a branch ruleset (steps in <a href="#ops">section 9</a>). They apply to everyone, including admins.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Control</th><th>Setting</th></tr></thead>
+          <tbody>
+            <tr><td>No direct pushes</td><td>Require a pull request before merging</td></tr>
+            <tr><td>Peer review</td><td>1 approving review required. Stale approvals are dismissed when new commits are pushed. You cannot approve your own PR.</td></tr>
+            <tr><td>Automated checks</td><td>The <code>quality</code> CI job (format, lint, audit, tests) must pass, and the branch must be up to date with <code>main</code></td></tr>
+            <tr><td>Conversations</td><td>All review conversations must be resolved before merge</td></tr>
+            <tr><td>History</td><td>Linear history, squash merge only, source branch deleted after merge</td></tr>
+            <tr><td>Safety</td><td>Force pushes and branch deletion blocked. No bypass for admins.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Pull request template</h3>
+      <p>Save this as <code>.github/pull_request_template.md</code>. GitHub pre-fills every new PR with it.</p>
+      <div class="codewrap"><div class="codebar"><span>.github/pull_request_template.md</span></div><pre class="wrapped" data-copy><code>## What and why
+Closes #
+
+## How to test
+1.
+2.
+
+## Screenshots (required for UI changes)
+Before:
+After:
+
+## Checklist
+- [ ] `npm run lint`, `npm run format:check`, and `npm test` pass locally
+- [ ] Acceptance criteria on the issue are met
+- [ ] No secrets, tokens, or personal data in the diff
+- [ ] README or playbook updated if setup or behavior changed
+
+## AI assistance
+- [ ] AI-assisted. Tool: ____ . What it generated: ____
+- [ ] I reviewed the output and can explain every line</code></pre></div>
+
+      <h3>How to review a PR</h3>
+      <ul>
+        <li>Respond within 24 hours. Pull the branch or use the preview if you are unsure how it behaves.</li>
+        <li>Check the acceptance criteria first, then readability, then edge cases, then style. Prettier and ESLint already cover style.</li>
+        <li>Flag anything that looks like a secret, personal data, or an unvetted dependency as a blocker.</li>
+        <li>Prefix small suggestions with <code>nit:</code> so the author knows they are optional. Approve with comments when only nits remain.</li>
+        <li>Keep PRs small. Over roughly 400 changed lines, ask the author to split it.</li>
+      </ul>
+
+      <h3>Daily command cheat sheet</h3>
+      <div class="codewrap"><div class="codebar"><span>terminal</span></div><pre class="wrapped" data-copy><code>git switch main &amp;&amp; git pull                 # start from the latest main
+git switch -c feature/14-empty-state            # one branch per issue
+# ...make your change, then:
+npm run lint &amp;&amp; npm run format:check &amp;&amp; npm test
+git add -p                                      # stage deliberately, review as you go
+git commit -m "feat(matches): show empty state when no vendor fits"
+git push -u origin feature/14-empty-state
+gh pr create --fill                             # or click "Compare &amp; pull request" on GitHub</code></pre></div>
+    </section>
+
+    <section id="issues">
+      <h2>5. Issue tracking</h2>
+      <div class="answer">
+        <p><strong>GitHub Issues for the work, a GitHub Projects board for the flow.</strong> Everything lives next to the code, so a PR can close its card automatically.</p>
+        <p>Project board: <a href="https://github.com/kenziemw/Vow-Fare-Makenzie-Whitman/projects">github.com/kenziemw/Vow-Fare-Makenzie-Whitman/projects</a><br>
+        Issues: <a href="https://github.com/kenziemw/Vow-Fare-Makenzie-Whitman/issues">github.com/kenziemw/Vow-Fare-Makenzie-Whitman/issues</a><br>
+        Pull requests: <a href="https://github.com/kenziemw/Vow-Fare-Makenzie-Whitman/pulls">github.com/kenziemw/Vow-Fare-Makenzie-Whitman/pulls</a></p>
+      </div>
+
+      <h3>Working agreements</h3>
+      <ul>
+        <li>No work without a card. If you find something while working, open a new issue instead of widening your PR.</li>
+        <li>Every card has one assignee and one of the type labels below.</li>
+        <li>Write titles as outcomes in the imperative: "Show an empty state when no vendor fits the budget," not "Empty state bug."</li>
+        <li>Every PR contains <code>Closes #N</code>. Merging closes the issue and moves the card to <em>Done</em>.</li>
+        <li>On Monday we groom the Backlog: close stale cards, split large ones, and move ready ones up.</li>
+      </ul>
+
+      <h3>Labels</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Label</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code>feature</code></td><td>New user-visible capability</td></tr>
+            <tr><td><code>bug</code></td><td>Something behaves differently from the acceptance criteria</td></tr>
+            <tr><td><code>chore</code></td><td>Tooling, dependencies, configuration</td></tr>
+            <tr><td><code>docs</code></td><td>README, playbook, decision notes</td></tr>
+            <tr><td><code>research</code></td><td>A question to answer through interviews, testing, or reading</td></tr>
+            <tr><td><code>P0</code>, <code>P1</code>, <code>P2</code></td><td>Blocker, important this week, and nice to have</td></tr>
+            <tr><td><code>blocked</code></td><td>Waiting on a person or a decision. Say who in a comment.</td></tr>
+            <tr><td><code>incident</code></td><td>The live site is broken or wrong (see <a href="#ops">section 9</a>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Issue template</h3>
+      <div class="codewrap"><div class="codebar"><span>.github/ISSUE_TEMPLATE/feature.md</span></div><pre class="wrapped" data-copy><code>---
+name: Feature or story
+about: A user-facing change
+labels: feature
+---
+
+**User story**
+As a couple planning a wedding, I want ___ so that ___.
+
+**Why (evidence)**
+Link the interview, test result, or research insight behind this.
+
+**Acceptance criteria**
+- [ ]
+- [ ]
+
+**Design notes**
+Sketch, screenshot, or "no UI change."</code></pre></div>
+
+      <h3>Set up the board (one time)</h3>
+      <ol>
+        <li>On the repo page open <em>Projects</em>, then <em>New project</em>, and choose the <em>Board</em> layout.</li>
+        <li>Rename the status columns to Backlog, Ready, In progress, In review, and Done.</li>
+        <li>In the project's <em>Workflows</em>, enable <em>Auto-add to project</em> for this repo, <em>Item closed</em> to Done, and <em>Pull request merged</em> to Done.</li>
+        <li>Link the project to the repo so its issues appear on the repo's Projects tab, then paste the board URL into this section.</li>
+      </ol>
+
+      <h3>Starter backlog, taken from our research</h3>
+      <p>These cards come straight from the ranked design features and the first round of prototype testing.</p>
+      <ul>
+        <li>Require published pricing for any vendor listed on the platform.</li>
+        <li>Show a live count of vendors that fit on each category tile before the user picks a budget.</li>
+        <li>Add a running total across all categories so couples can see their overall wedding budget.</li>
+        <li>Design an empty state for when a budget is too low to match any vendor, with a suggested minimum.</li>
+        <li>Add a line near the budget input explaining how budget data is handled.</li>
+        <li>Add vendor-facing messaging that frames a booking request as a pre-qualified lead.</li>
+      </ul>
+    </section>
+
+    <section id="ai">
+      <h2>6. AI agents and controls</h2>
+      <div class="answer">
+        <p><strong>Approved:</strong> Claude (the <a href="https://claude.ai">claude.ai</a> chat and Claude Code, see the <a href="https://docs.claude.com">docs</a>) and <a href="https://github.com/features/copilot">GitHub Copilot</a> in VS Code.</p>
+        <p><strong>Everything else needs a team vote first.</strong> Propose the tool in chat, get approval from three of four teammates, and add it to this section before anyone uses it on project work.</p>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Tool</th><th>Good for</th><th>Not for</th></tr></thead>
+          <tbody>
+            <tr><td>Claude (chat)</td><td>Brainstorming, drafting code and tests, explaining unfamiliar code, writing docs, reviewing a diff you paste in</td><td>Anything containing secrets or personal data. Final architecture decisions without the team.</td></tr>
+            <tr><td>Claude Code</td><td>Multi-file changes on a feature branch, scaffolding config, fixing failing tests</td><td>Running on <code>main</code>. Merging. Holding admin or deploy credentials.</td></tr>
+            <tr><td>GitHub Copilot</td><td>Inline autocomplete, quick explanations, boilerplate</td><td>Writing whole features unsupervised</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Guardrails</h3>
+      <ol>
+        <li><strong>A human owns every line.</strong> If you cannot explain AI-written code in review, it does not get merged.</li>
+        <li><strong>AI code goes through the same pipeline as human code.</strong> Branch, pull request, green CI, and one human approval. Agents never push to <code>main</code>, never merge, and never get admin tokens.</li>
+        <li><strong>Keep secrets and private data out of prompts.</strong> That means API keys, tokens, <code>.env</code> contents, personal data, private vendor pricing, and unpublished interview recordings.</li>
+        <li><strong>Disclose AI use in the PR.</strong> The PR template has a checkbox for the tool and what it generated.</li>
+        <li><strong>Verify every dependency an AI suggests.</strong> Confirm the package exists on <a href="https://www.npmjs.com">npmjs.com</a>, is actively maintained, and passes <code>npm audit</code>. Invented package names are a known supply-chain attack.</li>
+        <li><strong>Keep the audit trail honest.</strong> When an agent produces a first draft, commit it as its own commit and make your human edits in later commits, so history shows what the machine produced and what we changed.</li>
+        <li><strong>Never present invented evidence as real.</strong> Vendor names, prices, and ratings in the prototype are illustrative mock data and are labeled that way. AI must not generate fake reviews, testimonials, quotes, or research results.</li>
+        <li><strong>Ask for small diffs.</strong> One issue at a time, with the acceptance criteria in the prompt. Review the diff, not just the result.</li>
+        <li><strong>Do not skip permission prompts.</strong> When using Claude Code, keep the default mode where it asks before editing files or running commands, and run it only on a feature branch.</li>
+      </ol>
+
+      <h3>Prompt starter</h3>
+      <div class="codewrap"><div class="codebar"><span>paste into Claude or Copilot chat</span></div><pre class="wrapped" data-copy><code>Context: VowFare is a static HTML, CSS, and vanilla JavaScript prototype
+(no framework, no build step). Code style is enforced by eslint.config.js
+and .prettierrc.
+
+Task: implement issue #__ ("title here").
+Acceptance criteria:
+- ...
+
+Constraints: no new dependencies, keep changes under ~100 lines,
+add or update a Playwright test in tests/, do not touch unrelated code.
+Output: a minimal diff and a one-paragraph explanation of what changed.</code></pre></div>
+    </section>
+
+    <section id="quality">
+      <h2>7. Code quality</h2>
+      <div class="answer">
+        <p><strong>Prettier formats, ESLint lints, and hooks plus CI enforce both.</strong> Security scanning runs on GitHub: Dependabot, CodeQL, secret scanning, and <code>npm audit</code>.</p>
+        <p>Rule of thumb: an issue should be caught first in your editor, then at commit, then in CI. Each layer is a backstop for the one before.</p>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Concern</th><th>Tool</th><th>Config file</th><th>Runs</th></tr></thead>
+          <tbody>
+            <tr><td>Formatting</td><td><a href="https://prettier.io">Prettier</a></td><td><code>.prettierrc</code></td><td>On save, pre-commit, CI</td></tr>
+            <tr><td>Linting</td><td><a href="https://eslint.org">ESLint 9</a> with eslint-plugin-html</td><td><code>eslint.config.js</code></td><td>On save, pre-commit, CI</td></tr>
+            <tr><td>Commit messages</td><td><a href="https://commitlint.js.org">commitlint</a></td><td><code>commitlint.config.js</code></td><td>commit-msg hook</td></tr>
+            <tr><td>Hooks</td><td><a href="https://typicode.github.io/husky">Husky</a> and lint-staged</td><td><code>.husky/</code>, <code>package.json</code></td><td>Every commit</td></tr>
+            <tr><td>Dependency vulnerabilities</td><td><code>npm audit</code> and Dependabot</td><td><code>.github/dependabot.yml</code></td><td>CI, plus weekly update PRs</td></tr>
+            <tr><td>Static security analysis</td><td>GitHub CodeQL</td><td>Default setup in repo settings</td><td>Every PR and push to <code>main</code></td></tr>
+            <tr><td>Leaked secrets</td><td>GitHub secret scanning with push protection</td><td>Repo settings</td><td>On every push (blocks it)</td></tr>
+            <tr><td>Accessibility and performance</td><td>Lighthouse in Chrome DevTools</td><td>None</td><td>Manually before each demo. Target: Accessibility 90 or higher.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Install and configure</h3>
+      <div class="codewrap"><div class="codebar"><span>terminal (maintainer, one time)</span></div><pre class="wrapped" data-copy><code>npm init -y
+npm install -D eslint @eslint/js globals eslint-plugin-html eslint-config-prettier prettier \
+  husky lint-staged @commitlint/cli @commitlint/config-conventional \
+  @playwright/test http-server
+npx husky init
+echo "npx lint-staged" &gt; .husky/pre-commit
+echo 'npx --no -- commitlint --edit $1' &gt; .husky/commit-msg</code></pre></div>
+
+      <div class="codewrap"><div class="codebar"><span>package.json (merge these keys)</span></div><pre class="wrapped" data-copy><code>{
+  "name": "vowfare",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "http-server . -p 5500 -c-1",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "playwright test",
+    "audit": "npm audit --audit-level=high",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,html}": ["eslint --fix", "prettier --write"],
+    "*.{css,json,md,yml}": "prettier --write"
+  }
+}</code></pre></div>
+
+      <div class="codewrap"><div class="codebar"><span>eslint.config.js</span></div><pre class="wrapped" data-copy><code>import js from "@eslint/js";
+import globals from "globals";
+import html from "eslint-plugin-html";
+import prettier from "eslint-config-prettier";
+
+const rules = {
+  eqeqeq: "error",
+  "no-var": "error",
+  "prefer-const": "error",
+  // vars: "local" so functions called from legacy inline onclick handlers are not flagged
+  "no-unused-vars": ["error", { args: "none", vars: "local" }],
+};
+
+export default [
+  { ignores: ["node_modules/", "playwright-report/", "test-results/"] },
+  js.configs.recommended,
+  {
+    files: ["**/*.js"],
+    languageOptions: { ecmaVersion: 2022, sourceType: "module", globals: globals.browser },
+    rules,
+  },
+  {
+    files: ["**/*.html"],
+    plugins: { html },
+    languageOptions: { ecmaVersion: 2022, sourceType: "script", globals: globals.browser },
+    rules,
+  },
+  prettier, // must be last: turns off rules that conflict with Prettier
+];</code></pre></div>
+
+      <div class="codewrap"><div class="codebar"><span>.prettierrc</span></div><pre class="wrapped" data-copy><code>{
+  "semi": true,
+  "singleQuote": false,
+  "printWidth": 100,
+  "trailingComma": "all"
+}</code></pre></div>
+
+      <div class="codewrap"><div class="codebar"><span>.prettierignore</span></div><pre class="wrapped" data-copy><code>node_modules
+package-lock.json
+playwright-report
+test-results
+*.png</code></pre></div>
+
+      <div class="codewrap"><div class="codebar"><span>commitlint.config.js</span></div><pre class="wrapped" data-copy><code>export default { extends: ["@commitlint/config-conventional"] };</code></pre></div>
+
+      <div class="codewrap"><div class="codebar"><span>.github/dependabot.yml</span></div><pre class="wrapped" data-copy><code>version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"</code></pre></div>
+
+      <div class="codewrap"><div class="codebar"><span>.github/workflows/ci.yml</span></div><pre class="wrapped" data-copy><code>name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  quality:            # this job name is the required status check on main
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run audit
+      - run: npx playwright install --with-deps chromium
+      - run: npm test</code></pre></div>
+
+      <h3>Turn on GitHub's security features</h3>
+      <ol>
+        <li>Open the repo's <em>Settings</em>, then <em>Code security</em>.</li>
+        <li>Enable <em>Dependency graph</em>, <em>Dependabot alerts</em>, and <em>Dependabot security updates</em>.</li>
+        <li>Under <em>Code scanning</em>, choose <em>Set up</em> for CodeQL and pick the <em>Default</em> setup.</li>
+        <li>On the same page, enable <em>Secret scanning</em> and <em>Push protection</em> (both are free on public repos).</li>
+      </ol>
+
+      <div class="note"><p>The first time Prettier runs it will reformat <code>index.html</code> heavily. Do that once, alone, in a commit named <code>style: apply prettier</code>, so later diffs stay readable.</p></div>
+    </section>
+
+    <section id="testing">
+      <h2>8. Testing frameworks</h2>
+      <div class="answer">
+        <p><strong>Playwright Test (<code>@playwright/test</code>) for end-to-end tests.</strong> See the <a href="https://playwright.dev">Playwright docs</a>.</p>
+        <p>The product is a set of user journeys (landing, budget, matches, vendor profile), so we test it the way a couple would use it: in a real browser, clicking through the screens.</p>
+      </div>
+
+      <h3>How testing fits the workflow</h3>
+      <ul>
+        <li><strong>Locally:</strong> run <code>npm test</code> before you push. The pre-commit hook handles lint and format; tests are run on demand because they are slower.</li>
+        <li><strong>In CI:</strong> the <code>quality</code> job runs the full suite on every pull request. A red check blocks the merge.</li>
+        <li><strong>Definition of Done:</strong> any change to behavior comes with a new or updated test. A bug fix starts with a test that fails, then the fix that makes it pass.</li>
+        <li><strong>By hand:</strong> UI changes also get a quick manual pass at phone width (Chrome DevTools device toolbar) and before and after screenshots in the PR.</li>
+      </ul>
+
+      <h3>Commands</h3>
+      <div class="codewrap"><div class="codebar"><span>terminal</span></div><pre class="wrapped" data-copy><code>npm test                      # run everything headless
+npx playwright test --ui      # interactive runner, best for debugging
+npx playwright show-report    # open the last HTML report
+npx playwright codegen http://127.0.0.1:5500   # record a test by clicking</code></pre></div>
+
+      <h3>Configuration and example tests</h3>
+      <div class="codewrap"><div class="codebar"><span>playwright.config.js</span></div><pre class="wrapped" data-copy><code>import { defineConfig } from "@playwright/test";
+
+export default defineConfig({
+  testDir: "./tests",
+  use: { baseURL: "http://127.0.0.1:5500", trace: "retain-on-failure" },
+  webServer: {
+    command: "npx http-server . -p 5500 -s",
+    url: "http://127.0.0.1:5500",
+    reuseExistingServer: true,
+  },
+});</code></pre></div>
+
+      <div class="codewrap"><div class="codebar"><span>tests/journey.spec.js</span></div><pre class="wrapped" data-copy><code>import { test, expect } from "@playwright/test";
+
+async function setBudget(page, value) {
+  await page.locator("#budget-slider").evaluate((el, v) =&gt; {
+    el.value = String(v);
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+  }, value);
+}
+
+test("a couple can go from the landing screen to a vendor and back home", async ({ page }) =&gt; {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Set your budget" }).click();
+  await expect(page.getByText("Fits your budget").first()).toBeVisible();
+
+  await page.locator(".vendor-card").first().click();
+  await expect(page.getByRole("button", { name: "Request to book" })).toBeVisible();
+
+  await page.getByRole("button", { name: /Back to matches/ }).click();
+  await page.getByRole("button", { name: /Back to home/ }).click();
+  await expect(page.getByRole("heading", { name: /No connections/ })).toBeVisible();
+});
+
+test("a high budget fits every photography vendor and hides the outside-budget group", async ({ page }) =&gt; {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Set your budget" }).click();
+  await setBudget(page, 10000);
+  await expect(page.locator("#match-count")).toContainText("8 of 8");
+  await expect(page.locator("#out-section")).toBeHidden();
+});
+
+test("a low budget moves vendors into the outside-budget group", async ({ page }) =&gt; {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Set your budget" }).click();
+  await setBudget(page, 1500);
+  await expect(page.locator("#out-heading")).toContainText("Outside this budget");
+});
+
+// Known gap found in user testing: a tester asked what happens when no vendor fits.
+test.fixme("shows an empty state with a suggested minimum when no vendor fits", async ({ page }) =&gt; {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Set your budget" }).click();
+  await setBudget(page, 800);
+  await expect(page.getByText(/no vendors fit/i)).toBeVisible();
+});</code></pre></div>
+
+      <h3>What we do not have yet</h3>
+      <p>There are no unit tests because the matching logic still lives inside the page script. When we extract it into <code>src/matching.js</code> we will add <a href="https://vitest.dev">Vitest</a> unit tests for it and record the change in <code>docs/decisions/</code>.</p>
+
+      <h3>Product validation tests</h3>
+      <p>Code tests tell us it works. We also test whether it is understood and wanted, using two measures on every round of prototype testing with prospective customers (not friends or family):</p>
+      <ul>
+        <li><strong>Comprehension:</strong> after a cold first look, can they say what it does and who it is for?</li>
+        <li><strong>Likelihood to switch:</strong> a 1 to 10 rating of how likely they would be to use it instead of how they find vendors today, plus what holds the number back.</li>
+      </ul>
+      <p>The latest round with five prospective customers averaged 8.8 out of 10. Every finding becomes a card on the board.</p>
+    </section>
+
+    <section id="ops">
+      <h2>9. Other controls, tools, and procedures</h2>
+      <div class="answer">
+        <p><strong>Deployment is automatic:</strong> merging to <code>main</code> publishes the site on GitHub Pages at <a href="https://kenziemw.github.io/Vow-Fare-Makenzie-Whitman/">kenziemw.github.io/Vow-Fare-Makenzie-Whitman</a>.</p>
+        <p>Because there is no server or database yet, our operational surface is small: Pages, Actions, and the repo settings below.</p>
+      </div>
+
+      <h3>Deployment and rollback</h3>
+      <ol>
+        <li>Merge a PR into <code>main</code>. GitHub Pages rebuilds, usually within one to two minutes. Watch the <em>pages build and deployment</em> run in the repo's <em>Actions</em> tab.</li>
+        <li>Open the live URL in a private window and walk all three screens. Hard-refresh (<kbd>Cmd</kbd> or <kbd>Ctrl</kbd> plus <kbd>Shift</kbd> plus <kbd>R</kbd>) if you still see the old version.</li>
+        <li>If something broke, use the <em>Revert</em> button on the merged PR to open a revert PR, or run <code>git revert &lt;commit-sha&gt;</code> on a branch. Never force-push to <code>main</code>.</li>
+      </ol>
+
+      <h3>Secrets and configuration</h3>
+      <ul>
+        <li>Today there are no secrets. The site is static and calls no APIs. Keep it that way as long as you can.</li>
+        <li>Never commit <code>.env</code> files, keys, or tokens. Commit a <code>.env.example</code> with fake values instead.</li>
+        <li>Anything placed in browser JavaScript is public. If we ever need a private key, it goes behind a serverless function, never in <code>index.html</code>.</li>
+        <li>When a CI secret is needed, add it under the repo's <em>Settings, Secrets and variables, Actions</em> and read it as <code>${{ secrets.NAME }}</code>.</li>
+        <li><strong>If a secret leaks:</strong> rotate it first, then remove it from the code, then tell the team. Deleting the commit does not un-leak it.</li>
+        <li>Two-factor authentication is required on every teammate's GitHub account.</li>
+      </ul>
+      <div class="codewrap"><div class="codebar"><span>.gitignore</span></div><pre class="wrapped" data-copy><code>node_modules/
+.env
+.env.*
+!.env.example
+playwright-report/
+test-results/
+.DS_Store</code></pre></div>
+
+      <h3>Data and privacy</h3>
+      <ul>
+        <li>The prototype stores nothing. Budget and guest-count values live in the browser's memory and disappear on refresh.</li>
+        <li>The waitlist and contact forms open the visitor's own email app (<code>mailto:</code>). No server receives the data.</li>
+        <li>Vendor names, prices, and capacities are illustrative mock data.</li>
+        <li>Before we collect any real user data we need a short privacy notice and a decision on where it is stored. A tester already asked how data would be saved, so treat this as a launch blocker.</li>
+      </ul>
+
+      <h3>Incidents and the "on-call" steward</h3>
+      <p>There is no pager for a static prototype. Instead, one teammate is the <strong>site steward</strong> each week, rotating through the team.</p>
+      <ul>
+        <li>The steward opens the live URL every Monday and before any class demo, and walks all three screens.</li>
+        <li>If the site is down or wrong, open an issue labeled <code>incident</code> and post in chat. Check <a href="https://www.githubstatus.com">githubstatus.com</a> in case it is a GitHub outage.</li>
+        <li>Fix forward or revert the same day. After a real incident, write three lines in the issue: what happened, why, and what we change.</li>
+        <li>Freeze <code>main</code> (no merges) for 24 hours before a graded demo, so the steward can verify a stable build.</li>
+      </ul>
+
+      <h3>Communication and documentation</h3>
+      <ul>
+        <li>Team chat is for quick async updates. Decisions that affect the code get written in the issue or PR so they are searchable.</li>
+        <li>The README is the source of truth for setup. This playbook is the source of truth for how we work, and it changes through pull requests like any other file.</li>
+        <li>Record significant technology choices as short notes in <code>docs/decisions/</code> using three headings: context, decision, consequences.</li>
+      </ul>
+
+      <h3>Onboarding checklists</h3>
+      <p><strong>Day one</strong></p>
+      <ul class="checklist">
+        <li>GitHub invitation accepted and two-factor authentication on</li>
+        <li>Git, VS Code, and Node LTS installed, and extensions installed</li>
+        <li>Repo cloned, <code>npm install</code> done, site running on port 5500</li>
+        <li><code>npm run lint &amp;&amp; npm run format:check &amp;&amp; npm test</code> passes on a clean clone</li>
+        <li>First PR merged (adding yourself to the team list counts)</li>
+      </ul>
+      <p><strong>First week</strong></p>
+      <ul class="checklist">
+        <li>Read the README and the three screens' code in <code>index.html</code></li>
+        <li>Review at least one teammate's PR</li>
+        <li>Finish one card from <em>Ready</em> end to end</li>
+        <li>Take a turn at the Friday review and bring one suggestion for this playbook</li>
+      </ul>
+
+      <h3>One-time repo setup (maintainer)</h3>
+      <p>The controls above only protect us once someone switches them on. Work through this list in order and tick each item.</p>
+      <ul class="checklist">
+        <li>Commit <code>package.json</code>, <code>eslint.config.js</code>, <code>.prettierrc</code>, <code>.prettierignore</code>, <code>commitlint.config.js</code>, <code>.gitignore</code>, and <code>.husky/</code> (<a href="#quality">section 7</a>)</li>
+        <li>Commit <code>playwright.config.js</code> and <code>tests/journey.spec.js</code> (<a href="#testing">section 8</a>)</li>
+        <li>Commit <code>.github/workflows/ci.yml</code>, <code>.github/dependabot.yml</code>, <code>.github/pull_request_template.md</code>, and the issue template</li>
+        <li>Run the CI workflow once so the <code>quality</code> check name exists</li>
+        <li><em>Settings, Pages</em>: deploy from branch <code>main</code>, folder <code>/ (root)</code></li>
+        <li><em>Settings, General, Pull Requests</em>: allow squash merging only, and automatically delete head branches</li>
+        <li><em>Settings, Rules, Rulesets, New branch ruleset</em> targeting <code>main</code>: require a pull request, 1 approval, dismiss stale approvals, require conversation resolution, require the <code>quality</code> status check and an up-to-date branch, require linear history, block force pushes and deletions, and leave bypass empty</li>
+        <li><em>Settings, Code security</em>: enable Dependabot, CodeQL default setup, secret scanning, and push protection</li>
+        <li>Create the Projects board and labels, then paste the board URL into <a href="#issues">section 5</a></li>
+        <li>Invite every teammate and confirm two-factor authentication is on</li>
+      </ul>
+    </section>
+
+    </div>
+  </main>
+</div>
+
+<footer>
+  <p>VowFare engineering playbook, maintained by the VowFare team.</p>
+  <p>Found something out of date? Open a pull request against this page.</p>
+</footer>
+
+<script>
+(function () {
+  // Theme toggle (stored per viewer when storage is available)
+  var root = document.documentElement;
+  var toggle = document.getElementById("themeToggle");
+  try {
+    var saved = localStorage.getItem("vowfare-theme");
+    if (saved === "dark" || saved === "light") root.setAttribute("data-theme", saved);
+  } catch (e) {}
+  toggle.addEventListener("click", function () {
+    var current = root.getAttribute("data-theme");
+    var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var isDark = current ? current === "dark" : prefersDark;
+    var next = isDark ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("vowfare-theme", next); } catch (e) {}
+  });
+
+  // Copy buttons on code blocks
+  document.querySelectorAll("pre[data-copy]").forEach(function (pre) {
+    var bar = pre.parentElement.querySelector(".codebar");
+    if (!bar) return;
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "copy";
+    btn.textContent = "Copy";
+    btn.addEventListener("click", function () {
+      var text = pre.innerText;
+      function done() {
+        btn.textContent = "Copied";
+        setTimeout(function () { btn.textContent = "Copy"; }, 1600);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, fallback);
+      } else {
+        fallback();
+      }
+      function fallback() {
+        var ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand("copy"); done(); } catch (e) { btn.textContent = "Press Ctrl+C"; }
+        document.body.removeChild(ta);
+      }
+    });
+    bar.appendChild(btn);
+  });
+
+  // Highlight the current section in the table of contents
+  var links = Array.prototype.slice.call(document.querySelectorAll(".toc a"));
+  var map = {};
+  links.forEach(function (a) { map[a.getAttribute("href").slice(1)] = a; });
+  var sections = Object.keys(map).map(function (id) { return document.getElementById(id); }).filter(Boolean);
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          links.forEach(function (a) { a.removeAttribute("aria-current"); });
+          var a = map[entry.target.id];
+          if (a) {
+            a.setAttribute("aria-current", "true");
+            if (window.innerWidth <= 900) a.scrollIntoView({ inline: "center", block: "nearest" });
+          }
+        }
+      });
+    }, { rootMargin: "-20% 0px -70% 0px" });
+    sections.forEach(function (s) { io.observe(s); });
+  }
+})();
+</script>
+</body>
+</html>
