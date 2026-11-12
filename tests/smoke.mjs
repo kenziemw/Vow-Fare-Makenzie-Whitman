@@ -1,128 +1,144 @@
 
 import { chromium } from "playwright";
-import { fileURLToPath } from "url";
-import path from "path";
 
-const root = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)), ".."
-);
-const url = "file://" + path.join(root, "index.html");
+const baseURL = "http://127.0.0.1:8000";
+let failures = 0;
 
-const money = (text) => {
-  const value = String(text).replace(/,/g, "");
-  const number = Number(value.replace(/[^0-9.]/g, ""));
-  return value.includes("−") || value.includes("-")
-    ? -number
-    : number;
-};
+function check(condition, message) {
+  console.log(`${condition ? "PASS" : "FAIL"}  ${message}`);
+  if (!condition) failures++;
+}
 
-let failed = 0;
-const ok = (condition, message) => {
-  console.log((condition ? "PASS  " : "FAIL  ") + message);
-  if (!condition) failed++;
-};
+function money(value) {
+  const text = String(value);
+  const amount = Number(text.replace(/[^0-9.]/g, ""));
+  return text.includes("−") || text.includes("-")
+    ? -amount : amount;
+}
 
 const browser = await chromium.launch();
 const page = await browser.newPage();
 const errors = [];
 
-page.on("pageerror", (error) => errors.push(error.message));
+page.on("pageerror", e => errors.push(e.message));
+
+page.on("response", response => {
+  if (response.status() >= 400) {
+    errors.push(
+      `HTTP ${response.status()}: ${response.url()}`
+    );
+  }
+});
 
 try {
-  await page.goto(url);
+  await page.goto(baseURL, {
+    waitUntil: "networkidle"
+  });
 
-  // Test 1: Landing page
-  ok(
+  // 1. Landing page
+  check(
     await page.locator(".hero h1").isVisible(),
     "Landing page loads"
   );
 
-  const categories = await page.locator("#chip-grid .chip").allTextContents();
-
-ok(
-  categories.length > 0,
-  "Vendor categories are displayed"
-);
-
-  ok(
-    await page.locator("#chip-grid .chip").count()
-      === categories.length,
-    "All vendor categories are displayed"
+  // 2. Vendor data and categories
+  const categories = await page.evaluate(
+    () => Object.entries(CATEGORIES).map(
+      ([key, value]) => ({
+        key,
+        label: value.label,
+        start: value.start,
+        vendors: value.vendors
+      })
+    )
   );
 
-  // Test 3: Budget dashboard
+  check(
+    categories.length === 8,
+    "All 8 vendor categories load"
+  );
+
+  check(
+    await page.locator("#chip-grid .chip").count()
+      === categories.length,
+    "All vendor category buttons display"
+  );
+
+  // 3. Budget dashboard
   await page.locator(".hero .cta-primary").click();
 
-  ok(
-    await page.locator("#total-budget-amount")
-      .textContent() === "$30,000",
+  check(
+    money(await page.locator(
+      "#total-budget-amount"
+    ).textContent()) === 30000,
     "Dashboard displays $30,000 budget"
   );
 
-  // Test 4: Budget calculations
   const allocated = money(
     await page.locator("#allocated-amount").textContent()
   );
+
   const remaining = money(
     await page.locator("#remaining-amount").textContent()
   );
 
-  ok(
+  check(
     allocated + remaining === 30000,
     "Budget allocation calculations are correct"
   );
 
-  // Test 5: Photography navigation
-  const photographyIndex = categories.indexOf("photography");
+  // 4. Photography navigation
+  const photographyIndex = categories.findIndex(
+    c => c.key === "photography"
+  );
 
-  ok(
-    photographyIndex >= 0,
+  check(
+    photographyIndex !== -1,
     "Photography category exists"
   );
 
-  if (photographyIndex >= 0) {
+  if (photographyIndex !== -1) {
+    const photography = categories[photographyIndex];
+
     await page.locator("button.view-vendors")
       .nth(photographyIndex).click();
 
-    ok(
-      await page.locator("#matches-kicker")
-        .textContent() === "Photography",
+    check(
+      (await page.locator("#matches-kicker")
+        .textContent()).trim() === photography.label,
       "Photography vendor page opens"
     );
 
-    // Test 6: Vendor filtering
-    const expected = await page.evaluate(() => {
-      const cat = CATEGORIES.photography;
-      const budget = Number(
-        document.querySelector("#budget-slider").value
-      );
-      return {
-        fitting: cat.vendors.filter(v => v.price <= budget).length,
-        outside: cat.vendors.filter(v => v.price > budget).length
-      };
-    });
-
-    const fitting = await page.locator(
-      "#vendor-list .vendor-card"
-    ).count();
-
-    const outside = await page.locator(
-      "#vendor-list-out .vendor-card"
-    ).count();
-
-    ok(
-      fitting === expected.fitting,
-      "Vendors within budget are correctly filtered"
+    // 5. Vendor budget filtering
+    const budget = Number(
+      await page.locator("#budget-slider").inputValue()
     );
 
-    ok(
-      outside === expected.outside,
-      "Over-budget vendors are correctly filtered"
+    const expectedFits = photography.vendors.filter(
+      vendor => vendor.price <= budget
+    ).length;
+
+    const expectedOutside =
+      photography.vendors.length - expectedFits;
+
+    check(
+      await page.locator(
+        "#vendor-list .vendor-card"
+      ).count() === expectedFits,
+      "Within-budget vendors display correctly"
     );
 
-    // Test 7: Vendor details
+    check(
+      await page.locator(
+        "#vendor-list-out .vendor-card"
+      ).count() === expectedOutside,
+      "Over-budget vendors display correctly"
+    );
+
+    // 6. Vendor detail page
     const firstVendor = page.locator(
-      "#vendor-list .vendor-card, #vendor-list-out .vendor-card"
+      "#vendor-list .vendor-card, " +
+      "#vendor-list-out .vendor-card"
     ).first();
 
     const listedPrice = money(
@@ -135,29 +151,30 @@ ok(
       await page.locator("#vendor-total").textContent()
     );
 
-    ok(
+    check(
       total === listedPrice,
-      "Vendor detail price matches listed price"
+      "Vendor detail price matches listing"
     );
 
-    // Test 8: Price breakdown
-    const priceLines = await page.locator(
+    // 7. Price breakdown
+    const lines = await page.locator(
       "#price-lines .price-line span:last-child"
     ).allTextContents();
 
-    const sum = priceLines.map(money)
-      .reduce((a, b) => a + b, 0);
-
-    ok(
-      sum === total,
-      "Vendor price breakdown adds up correctly"
+    const sum = lines.map(money).reduce(
+      (a, b) => a + b, 0
     );
 
-    // Test 9: Booking interaction
-    let dialogText = "";
+    check(
+      sum === total,
+      "Vendor price breakdown is accurate"
+    );
 
-    page.once("dialog", async (dialog) => {
-      dialogText = dialog.message();
+    // 8. Booking button
+    let bookingResponded = false;
+
+    page.once("dialog", async dialog => {
+      bookingResponded = true;
       await dialog.accept();
     });
 
@@ -165,29 +182,33 @@ ok(
       "#screen-vendor .cta-primary.book"
     ).click();
 
-    ok(
-      dialogText.length > 0,
+    check(
+      bookingResponded,
       "Booking request button responds"
     );
   }
 
-  // Test 10: JavaScript errors
-  ok(
-    errors.length === 0,
-    "No JavaScript errors"
-  );
-
 } catch (error) {
-  failed++;
-  console.error("FAIL  Unexpected test error:", error);
-} finally {
-  await browser.close();
+  failures++;
+  console.error("FAIL  Test execution:", error.message);
 }
 
-console.log(
-  failed
-    ? `\n${failed} check(s) failed`
-    : "\nAll checks passed"
+// 9. JavaScript errors
+check(
+  errors.length === 0,
+  "No JavaScript or HTTP errors"
 );
 
-process.exit(failed ? 1 : 0);
+if (errors.length) {
+  console.error(errors.join("\n"));
+}
+
+await browser.close();
+
+console.log(
+  failures === 0
+    ? "\nAll checks passed!"
+    : `\n${failures} check(s) failed`
+);
+
+process.exit(failures ? 1 : 0);
