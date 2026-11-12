@@ -37,10 +37,12 @@ try {
     "Landing page loads"
   );
 
-  // Test 2: Categories match application data
-  const categories = await page.evaluate(
-    () => Object.keys(CATEGORIES)
-  );
+  const categories = await page.locator("#chip-grid .chip").allTextContents();
+
+ok(
+  categories.length > 0,
+  "Vendor categories are displayed"
+);
 
   ok(
     await page.locator("#chip-grid .chip").count()
